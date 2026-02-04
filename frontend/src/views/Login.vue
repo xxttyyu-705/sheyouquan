@@ -95,6 +95,10 @@ const handleLogin = async () => {
         if (code === 200) {
           localStorage.setItem('token', data.token)
           localStorage.setItem('user', JSON.stringify(data.userInfo))
+          // 存储用户ID用于后续请求
+          if (data.userInfo && data.userInfo.id) {
+            localStorage.setItem('userId', data.userInfo.id.toString())
+          }
           ElMessage.success(message || '登录成功')
           router.push('/')
         } else {

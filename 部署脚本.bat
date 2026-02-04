@@ -67,7 +67,7 @@ echo ✓ 前端依赖安装成功
 echo.
 echo [5/5] 启动前端服务...
 start "前端服务" cmd /c "npm run dev"
-echo ✓ 前端服务已启动 (http://localhost:3000)
+echo ✓ 前端服务已启动 (http://localhost:3002)
 
 echo.
 echo ========================================
@@ -75,7 +75,7 @@ echo 部署完成！
 echo ========================================
 echo.
 echo 访问地址:
-echo   前端: http://localhost:3000
+echo   前端: http://localhost:3002
 echo   后端API: http://localhost:8081
 echo   API文档: http://localhost:8081/swagger-ui.html
 echo.

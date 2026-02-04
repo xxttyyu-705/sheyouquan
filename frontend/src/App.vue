@@ -69,6 +69,7 @@ const handleCommand = (command) => {
   } else if (command === 'logout') {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    localStorage.removeItem('userId')
     router.push('/login')
   }
 }

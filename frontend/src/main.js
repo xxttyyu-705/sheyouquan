@@ -11,6 +11,8 @@ import axios from 'axios'
 // 配置axios
 axios.defaults.baseURL = 'http://localhost:8081/api/v1'
 axios.defaults.timeout = 10000
+// 添加withCredentials以支持跨域请求
+axios.defaults.withCredentials = false
 
 // 请求拦截器
 axios.interceptors.request.use(
@@ -18,10 +20,12 @@ axios.interceptors.request.use(
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+      // 只有在有token的情况下才添加用户ID头
+      const userId = localStorage.getItem('userId')
+      if (userId) {
+        config.headers['x-user-id'] = userId
+      }
     }
-    // 添加用户ID头（从token中提取或从用户信息中获取）
-    const userId = localStorage.getItem('userId') || '1'
-    config.headers['X-User-Id'] = userId
     return config
   },
   error => {
@@ -39,6 +43,8 @@ axios.interceptors.response.use(
       const { status } = error.response
       if (status === 401) {
         localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        localStorage.removeItem('userId')
         router.push('/login')
       }
     }
