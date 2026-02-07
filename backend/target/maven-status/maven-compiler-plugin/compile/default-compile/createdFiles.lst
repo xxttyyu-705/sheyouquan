@@ -11,6 +11,7 @@ com\shengyouquan\entity\ExchangeRecord.class
 com\shengyouquan\service\CourseService$1.class
 com\shengyouquan\common\Result.class
 com\shengyouquan\mapper\ExchangeRecordMapper.class
+com\shengyouquan\config\CorsConfig.class
 com\shengyouquan\controller\ProductController.class
 com\shengyouquan\mapper\OrderMapper.class
 com\shengyouquan\controller\ExchangeRequest.class

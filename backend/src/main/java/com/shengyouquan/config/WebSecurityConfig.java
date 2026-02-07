@@ -80,34 +80,53 @@ public class WebSecurityConfig {
     }
     
     /**
-     * CORS配置
+     * CORS配置源（用于Spring Security集成）
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        
         // 允许的源
         configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3003",  // 前端开发服务器
+            "http://localhost:3004",  // 前端开发服务器（备用端口）
             "http://localhost:3002",
             "http://localhost:3000",
             "http://localhost:5173",
+            "http://127.0.0.1:3003",
+            "http://127.0.0.1:3004",
             "http://127.0.0.1:3002",
             "http://127.0.0.1:3000",
             "http://127.0.0.1:5173"
         ));
+        
         // 允许的HTTP方法
         configuration.setAllowedMethods(Arrays.asList(
             "GET", "POST", "PUT", "DELETE", "OPTIONS"
         ));
+        
         // 允许的请求头
         configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", "x-user-id"
+            "Authorization", 
+            "Content-Type", 
+            "X-Requested-With", 
+            "Accept", 
+            "Origin", 
+            "Access-Control-Request-Method", 
+            "Access-Control-Request-Headers",
+            "x-user-id"
         ));
+        
         // 允许携带凭证（如Cookie、Authorization头）
         configuration.setAllowCredentials(true);
+        
         // 暴露的响应头
         configuration.setExposedHeaders(Arrays.asList(
-            "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"
+            "Access-Control-Allow-Origin",
+            "Access-Control-Allow-Credentials",
+            "Authorization"
         ));
+        
         // 预检请求缓存时间（秒）
         configuration.setMaxAge(3600L);
         
@@ -115,5 +134,45 @@ public class WebSecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+    
+    /**
+     * CORS配置源（用于Spring Security集成）
+     * 注意：此Bean已在CorsConfig.java中定义，此处注释掉以避免重复定义
+     */
+    // @Bean
+    // public CorsConfigurationSource corsConfigurationSource() {
+    //     CorsConfiguration configuration = new CorsConfiguration();
+    //     // 允许的源
+    //     configuration.setAllowedOrigins(Arrays.asList(
+    //         "http://localhost:3003",  // 添加前端3003端口
+    //         "http://localhost:3002",
+    //         "http://localhost:3000",
+    //         "http://localhost:5173",
+    //         "http://127.0.0.1:3003",  // 添加前端3003端口
+    //         "http://127.0.0.1:3002",
+    //         "http://127.0.0.1:3000",
+    //         "http://127.0.0.1:5173"
+    //     ));
+    //     // 允许的HTTP方法
+    //     configuration.setAllowedMethods(Arrays.asList(
+    //         "GET", "POST", "PUT", "DELETE", "OPTIONS"
+    //     ));
+    //     // 允许的请求头
+    //     configuration.setAllowedHeaders(Arrays.asList(
+    //         "Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", "x-user-id"
+    //     ));
+    //     // 允许携带凭证（如Cookie、Authorization头）
+    //     configuration.setAllowCredentials(true);
+    //     // 暴露的响应头
+    //     configuration.setExposedHeaders(Arrays.asList(
+    //         "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"
+    //     ));
+    //     // 预检请求缓存时间（秒）
+    //     configuration.setMaxAge(3600L);
+    //     
+    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    //     source.registerCorsConfiguration("/**", configuration);
+    //     return source;
+    // }
 
 }

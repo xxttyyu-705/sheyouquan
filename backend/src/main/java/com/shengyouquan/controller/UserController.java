@@ -1,5 +1,6 @@
 package com.shengyouquan.controller;
 
+import com.shengyouquan.common.JwtUtils;
 import com.shengyouquan.common.Result;
 import com.shengyouquan.dto.LoginRequest;
 import com.shengyouquan.dto.LoginResponse;
@@ -107,16 +108,23 @@ public class UserController {
     }
     
     /**
-     * 从token中提取用户ID（简化版，实际应该使用拦截器）
+     * 从token中提取用户ID
      */
     private Long extractUserIdFromToken(String token) {
-        // 这里简化处理，实际应该通过JwtUtils解析token
-        // 在实际项目中，应该通过拦截器或认证上下文获取
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
+        try {
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
+            // 使用JwtUtils解析token获取用户ID
+            return jwtUtils.getUserIdFromToken(token);
+        } catch (Exception e) {
+            throw new RuntimeException("无效的token");
         }
-        // 这里假设token中包含用户ID，实际应该通过JwtUtils解析
-        // 暂时返回1用于测试
-        return 1L;
     }
+    
+    /**
+     * 注入JwtUtils
+     */
+    @Autowired
+    private JwtUtils jwtUtils;
 }

@@ -9,10 +9,10 @@ import router from './router'
 import axios from 'axios'
 
 // 配置axios
-axios.defaults.baseURL = 'http://localhost:8081/api/v1'
+axios.defaults.baseURL = 'http://localhost:8082/api/v1'
 axios.defaults.timeout = 10000
-// 添加withCredentials以支持跨域请求
-axios.defaults.withCredentials = false
+// 添加withCredentials以支持跨域请求（必须设置为true，与后端CORS配置的allowCredentials对应）
+axios.defaults.withCredentials = true
 
 // 请求拦截器
 axios.interceptors.request.use(
