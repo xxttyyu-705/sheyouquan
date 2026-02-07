@@ -98,6 +98,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return relativePath.startsWith("/user/login") ||
                relativePath.startsWith("/user/register") ||
                relativePath.startsWith("/user/check") ||
+               relativePath.startsWith("/work/list") ||
+               relativePath.startsWith("/work/detail") ||
+               relativePath.startsWith("/work/hot") ||
+               relativePath.startsWith("/course/list") ||
+               relativePath.startsWith("/course/detail") ||
+               relativePath.startsWith("/course/recommended") ||
+               relativePath.startsWith("/product/list") ||
+               relativePath.startsWith("/product/detail") ||
+               relativePath.startsWith("/post/list") ||
+               relativePath.startsWith("/post/detail") ||
                relativePath.startsWith("/swagger-ui") ||
                relativePath.startsWith("/v3/api-docs") ||
                relativePath.startsWith("/swagger-resources") ||
