@@ -59,6 +59,12 @@ public class WebSecurityConfig {
                     AntPathRequestMatcher.antMatcher("/product/detail/**"),
                     AntPathRequestMatcher.antMatcher("/post/list"),
                     AntPathRequestMatcher.antMatcher("/post/detail/**"),
+                    AntPathRequestMatcher.antMatcher("/comment/list"),
+                    AntPathRequestMatcher.antMatcher("/point/balance"),
+                    AntPathRequestMatcher.antMatcher("/point/history"),
+                    AntPathRequestMatcher.antMatcher("/exchange/list"),
+                    AntPathRequestMatcher.antMatcher("/file/upload/**"),
+                    AntPathRequestMatcher.antMatcher("/file/{filename:.+}"),
                     AntPathRequestMatcher.antMatcher("/swagger-ui/**"),
                     AntPathRequestMatcher.antMatcher("/v3/api-docs/**"),
                     AntPathRequestMatcher.antMatcher("/swagger-resources/**"),
@@ -83,8 +89,10 @@ public class WebSecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:3002",
             "http://localhost:3000",
+            "http://localhost:5173",
             "http://127.0.0.1:3002",
-            "http://127.0.0.1:3000"
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:5173"
         ));
         // 允许的HTTP方法
         configuration.setAllowedMethods(Arrays.asList(
