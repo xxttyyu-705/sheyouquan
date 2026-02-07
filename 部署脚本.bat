@@ -51,7 +51,7 @@ echo ✓ 后端编译成功
 echo.
 echo [3/5] 启动后端服务...
 start "后端服务" cmd /c "java -jar target/shengyouquan-backend-1.0.0.jar"
-echo ✓ 后端服务已启动 (http://localhost:8081)
+echo ✓ 后端服务已启动 (http://localhost:8082)
 
 echo.
 echo [4/5] 安装前端依赖...
@@ -67,7 +67,7 @@ echo ✓ 前端依赖安装成功
 echo.
 echo [5/5] 启动前端服务...
 start "前端服务" cmd /c "npm run dev"
-echo ✓ 前端服务已启动 (http://localhost:3002)
+echo ✓ 前端服务已启动 (http://localhost:3003)
 
 echo.
 echo ========================================
@@ -75,9 +75,9 @@ echo 部署完成！
 echo ========================================
 echo.
 echo 访问地址:
-echo   前端: http://localhost:3002
-echo   后端API: http://localhost:8081
-echo   API文档: http://localhost:8081/swagger-ui.html
+echo   前端: http://localhost:3003
+echo   后端API: http://localhost:8082
+echo   API文档: http://localhost:8082/swagger-ui.html
 echo.
 echo 测试账号:
 echo   管理员: admin / 123456

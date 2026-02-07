@@ -22,7 +22,7 @@ public class ShengYouQuanApplication {
         app.run(args);
         System.out.println("=================================");
         System.out.println("摄友圈社区系统启动成功！");
-        System.out.println("API文档地址: http://localhost:8081/swagger-ui.html");
+        System.out.println("API文档地址: http://localhost:8082/swagger-ui.html");
         System.out.println("=================================");
     }
 }

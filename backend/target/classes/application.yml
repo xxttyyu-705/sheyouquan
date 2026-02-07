@@ -94,7 +94,7 @@ file:
     path: D:/uploads/shengyouquan/
     max-size: 500MB
     allowed-exts: jpg,jpeg,png,gif,mp4,avi,mp3,pdf,doc,docx
-  domain: http://localhost:8081
+  domain: http://localhost:8082
 
 # 日志配置
 logging:

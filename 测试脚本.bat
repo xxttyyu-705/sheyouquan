@@ -21,12 +21,12 @@ set /p choice="请选择测试项 [1-8]: "
 
 if "%choice%"=="1" (
     echo 正在测试商品列表接口...
-    curl -X GET "http://localhost:8081/api/v1/product/list?page=1&size=12" ^
+    curl -X GET "http://localhost:8082/api/v1/product/list?page=1&size=12" ^
          -H "Content-Type: application/json" ^
          -w "\n状态码: %{http_code}\n响应时间: %{time_total}s\n"
 ) else if "%choice%"=="2" (
     echo 正在测试帖子列表接口...
-    curl -X GET "http://localhost:8081/api/v1/post/list?page=1&size=10" ^
+    curl -X GET "http://localhost:8082/api/v1/post/list?page=1&size=10" ^
          -H "Content-Type: application/json" ^
          -w "\n状态码: %{http_code}\n响应时间: %{time_total}s\n"
 ) else if "%choice%"=="3" (
@@ -34,7 +34,7 @@ if "%choice%"=="1" (
     echo 请选择一个图片文件进行上传...
     set /p image_file="请输入图片文件路径: "
     if exist "!image_file!" (
-        curl -X POST "http://localhost:8081/api/v1/file/upload/image" ^
+        curl -X POST "http://localhost:8082/api/v1/file/upload/image" ^
              -F "file=@!image_file!" ^
              -H "Content-Type: multipart/form-data" ^
              -w "\n状态码: %{http_code}\n响应时间: %{time_total}s\n"
@@ -47,13 +47,13 @@ if "%choice%"=="1" (
     set /p token="请输入用户token (留空使用默认值): "
     if "!token!"=="" (
         echo 使用默认token测试...
-        curl -X GET "http://localhost:8081/api/v1/point/balance" ^
+        curl -X GET "http://localhost:8082/api/v1/point/balance" ^
              -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc5OTk5OTk5OX0.abc123" ^
              -H "x-user-id: 1" ^
              -H "Content-Type: application/json" ^
              -w "\n状态码: %{http_code}\n响应时间: %{time_total}s\n"
     ) else (
-        curl -X GET "http://localhost:8081/api/v1/point/balance" ^
+        curl -X GET "http://localhost:8082/api/v1/point/balance" ^
              -H "Authorization: Bearer !token!" ^
              -H "x-user-id: 1" ^
              -H "Content-Type: application/json" ^
@@ -65,13 +65,13 @@ if "%choice%"=="1" (
     set /p token="请输入用户token (留空使用默认值): "
     if "!token!"=="" (
         echo 使用默认token测试...
-        curl -X GET "http://localhost:8081/api/v1/exchange/list?page=1&size=10" ^
+        curl -X GET "http://localhost:8082/api/v1/exchange/list?page=1&size=10" ^
              -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc5OTk5OTk5OX0.abc123" ^
              -H "x-user-id: 1" ^
              -H "Content-Type: application/json" ^
              -w "\n状态码: %{http_code}\n响应时间: %{time_total}s\n"
     ) else (
-        curl -X GET "http://localhost:8081/api/v1/exchange/list?page=1&size=10" ^
+        curl -X GET "http://localhost:8082/api/v1/exchange/list?page=1&size=10" ^
              -H "Authorization: Bearer !token!" ^
              -H "x-user-id: 1" ^
              -H "Content-Type: application/json" ^
@@ -81,25 +81,25 @@ if "%choice%"=="1" (
     echo 正在测试所有接口...
     echo.
     echo [1/5] 测试商品列表接口...
-    curl -X GET "http://localhost:8081/api/v1/product/list?page=1&size=12" ^
+    curl -X GET "http://localhost:8082/api/v1/product/list?page=1&size=12" ^
          -H "Content-Type: application/json" ^
          -w "\n状态码: %{http_code}\n"
     
     echo.
     echo [2/5] 测试帖子列表接口...
-    curl -X GET "http://localhost:8081/api/v1/post/list?page=1&size=10" ^
+    curl -X GET "http://localhost:8082/api/v1/post/list?page=1&size=10" ^
          -H "Content-Type: application/json" ^
          -w "\n状态码: %{http_code}\n"
     
     echo.
     echo [3/5] 测试评论列表接口...
-    curl -X GET "http://localhost:8081/api/v1/comment/list?postId=1&page=1&size=10" ^
+    curl -X GET "http://localhost:8082/api/v1/comment/list?postId=1&page=1&size=10" ^
          -H "Content-Type: application/json" ^
          -w "\n状态码: %{http_code}\n"
     
     echo.
     echo [4/5] 测试积分余额接口...
-    curl -X GET "http://localhost:8081/api/v1/point/balance" ^
+    curl -X GET "http://localhost:8082/api/v1/point/balance" ^
          -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc5OTk5OTk5OX0.abc123" ^
          -H "x-user-id: 1" ^
          -H "Content-Type: application/json" ^
@@ -107,7 +107,7 @@ if "%choice%"=="1" (
     
     echo.
     echo [5/5] 测试兑换记录接口...
-    curl -X GET "http://localhost:8081/api/v1/exchange/list?page=1&size=10" ^
+    curl -X GET "http://localhost:8082/api/v1/exchange/list?page=1&size=10" ^
          -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc5OTk5OTk5OX0.abc123" ^
          -H "x-user-id: 1" ^
          -H "Content-Type: application/json" ^

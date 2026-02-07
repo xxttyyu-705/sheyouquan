@@ -95,19 +95,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             relativePath = path.substring(contextPath.length());
         }
         
-        return relativePath.startsWith("/user/login") ||
-               relativePath.startsWith("/user/register") ||
-               relativePath.startsWith("/user/check") ||
-               relativePath.startsWith("/work/list") ||
-               relativePath.startsWith("/work/detail") ||
-               relativePath.startsWith("/work/hot") ||
-               relativePath.startsWith("/course/list") ||
-               relativePath.startsWith("/course/detail") ||
-               relativePath.startsWith("/course/recommended") ||
-               relativePath.startsWith("/product/list") ||
-               relativePath.startsWith("/product/detail") ||
-               relativePath.startsWith("/post/list") ||
-               relativePath.startsWith("/post/detail") ||
+        return relativePath.startsWith("/api/v1/user/login") ||
+               relativePath.startsWith("/api/v1/user/register") ||
+               relativePath.startsWith("/api/v1/user/check/") ||
+               relativePath.startsWith("/api/v1/work/list") ||
+               relativePath.startsWith("/api/v1/work/detail/") ||
+               relativePath.startsWith("/api/v1/work/hot") ||
+               relativePath.startsWith("/api/v1/course/list") ||
+               relativePath.startsWith("/api/v1/course/detail/") ||
+               relativePath.startsWith("/api/v1/course/recommended") ||
+               relativePath.startsWith("/api/v1/product/list") ||
+               relativePath.startsWith("/api/v1/product/detail/") ||
+               relativePath.startsWith("/api/v1/post/list") ||
+               relativePath.startsWith("/api/v1/post/detail/") ||
+               relativePath.startsWith("/api/v1/comment/list") ||
+               relativePath.startsWith("/api/v1/point/balance") ||
+               relativePath.startsWith("/api/v1/point/history") ||
+               relativePath.startsWith("/api/v1/exchange/list") ||
+               relativePath.startsWith("/api/v1/file/upload/") ||
+               relativePath.startsWith("/api/v1/file/") ||
                relativePath.startsWith("/swagger-ui") ||
                relativePath.startsWith("/v3/api-docs") ||
                relativePath.startsWith("/swagger-resources") ||
