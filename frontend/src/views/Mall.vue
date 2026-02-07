@@ -38,14 +38,14 @@
         @click="showProductDetail(product)"
       >
         <div class="product-image">
-          <img :src="product.image || '/default-product.png'" :alt="product.name" />
+          <img :src="product.coverImage || '/default-product.png'" :alt="product.name" />
           <div class="stock-badge" v-if="product.stock <= 0">已售罄</div>
         </div>
         <div class="product-info">
           <h3>{{ product.name }}</h3>
           <p class="desc">{{ product.description }}</p>
           <div class="price-section">
-            <span class="points">{{ product.points }} 积分</span>
+            <span class="points">{{ product.price }} 积分</span>
             <span class="stock">库存: {{ product.stock }}</span>
           </div>
           <button 
@@ -90,15 +90,15 @@
         </div>
         <div class="modal-body">
           <div class="product-detail-image">
-            <img :src="selectedProduct?.image || '/default-product.png'" :alt="selectedProduct?.name" />
+            <img :src="selectedProduct?.coverImage || '/default-product.png'" :alt="selectedProduct?.name" />
           </div>
           <div class="product-detail-info">
             <p class="description">{{ selectedProduct?.description }}</p>
             <div class="detail-price">
-              <span class="points">{{ selectedProduct?.points }} 积分</span>
+              <span class="points">{{ selectedProduct?.price }} 积分</span>
               <span class="stock">库存: {{ selectedProduct?.stock }}</span>
             </div>
-            <div class="detail-category">分类: {{ selectedProduct?.category }}</div>
+            <div class="detail-category">分类: {{ selectedProduct?.categoryId }}</div>
             <button 
               class="exchange-btn" 
               :disabled="selectedProduct?.stock <= 0"
@@ -121,9 +121,9 @@
         <div class="modal-body">
           <div class="exchange-summary">
             <h3>{{ exchangeProduct?.name }}</h3>
-            <p>所需积分: <strong>{{ exchangeProduct?.points }} 分</strong></p>
+            <p>所需积分: <strong>{{ exchangeProduct?.price }} 分</strong></p>
             <p>当前积分: <strong>{{ userPoints }} 分</strong></p>
-            <p v-if="userPoints < exchangeProduct?.points" class="error-text">
+            <p v-if="userPoints < exchangeProduct?.price" class="error-text">
               积分不足！
             </p>
           </div>
@@ -242,13 +242,12 @@ const userPoints = ref(0)
 const exchangeRecords = ref([])
 const recordsLoading = ref(false)
 
-// 分类选项
+// 分类选项（对应数据库category_id）
 const categories = [
   { label: '全部', value: '' },
-  { label: '摄影器材', value: '器材' },
-  { label: '后期软件', value: '软件' },
-  { label: '摄影课程', value: '课程' },
-  { label: '周边商品', value: '周边' }
+  { label: '摄影器材', value: '1' },
+  { label: '三脚架', value: '2' },
+  { label: '电子书', value: '3' }
 ]
 
 // 计算属性
@@ -256,7 +255,7 @@ const canExchange = computed(() => {
   return exchangeForm.value.address && 
          exchangeForm.value.phone && 
          exchangeProduct.value &&
-         userPoints.value >= exchangeProduct.value.points
+         userPoints.value >= exchangeProduct.value.price
 })
 
 // 加载商品列表

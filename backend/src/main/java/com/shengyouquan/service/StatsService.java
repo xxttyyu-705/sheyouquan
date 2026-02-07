@@ -188,7 +188,7 @@ public class StatsService {
             productInfo.put("name", product.getName());
             int sales = salesMap.getOrDefault(product.getId(), 0);
             productInfo.put("sales", sales);
-            productInfo.put("revenue", sales * product.getPoints());
+            productInfo.put("revenue", sales * product.getPrice().intValue());
             topProducts.add(productInfo);
         }
         

@@ -45,19 +45,20 @@ public class ExchangeRecordService extends ServiceImpl<ExchangeRecordMapper, Exc
         
         // 检查积分余额
         Integer userPoints = pointService.getUserPoints(userId);
-        if (userPoints < product.getPoints()) {
+        Integer productPoints = product.getPrice().intValue();
+        if (userPoints < productPoints) {
             return false;
         }
         
         // 扣减积分
-        if (!pointService.deductPoints(userId, product.getPoints(), "兑换商品: " + product.getName())) {
+        if (!pointService.deductPoints(userId, productPoints, "兑换商品: " + product.getName())) {
             return false;
         }
         
         // 扣减库存
         if (!productService.deductStock(productId, 1)) {
             // 如果扣减库存失败，回滚积分
-            pointService.addPoints(userId, product.getPoints(), "兑换失败回滚");
+            pointService.addPoints(userId, productPoints, "兑换失败回滚");
             return false;
         }
         
@@ -66,7 +67,7 @@ public class ExchangeRecordService extends ServiceImpl<ExchangeRecordMapper, Exc
         record.setUserId(userId);
         record.setProductId(productId);
         record.setProductName(product.getName());
-        record.setPoints(product.getPoints());
+        record.setPoints(productPoints);
         record.setAddress(address);
         record.setPhone(phone);
         record.setRemark(remark);

@@ -33,13 +33,20 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
         
         wrapper.eq(Product::getStatus, 1); // 只显示上架商品
+        wrapper.eq(Product::getDeleted, 0); // 未删除
         
         if (keyword != null && !keyword.isEmpty()) {
             wrapper.like(Product::getName, keyword);
         }
         
+        // 注意：数据库中category_id是Long类型，前端传的是字符串，需要转换
         if (category != null && !category.isEmpty()) {
-            wrapper.eq(Product::getCategory, category);
+            try {
+                Long categoryId = Long.parseLong(category);
+                wrapper.eq(Product::getCategoryId, categoryId);
+            } catch (NumberFormatException e) {
+                // 如果转换失败，忽略category过滤
+            }
         }
         
         wrapper.orderByDesc(Product::getCreateTime);

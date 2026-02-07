@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
  * @since 1.0.0
  */
 @Data
-@TableName("products")
+@TableName("mall_goods")
 public class Product {
     
     @TableId(type = IdType.AUTO)
@@ -25,17 +25,20 @@ public class Product {
     
     private String description;
     
-    private String image;
-    
-    private Integer points; // 所需积分
+    private String coverImage; // 对应 cover_image
     
     private Integer stock; // 库存
-    
-    private String category; // 分类：equipment-器材, accessories-配件, materials-资料, membership-会员
     
     private Integer status; // 1: 上架, 0: 下架
     
     private LocalDateTime createTime;
     
     private LocalDateTime updateTime;
+    
+    // 数据库字段映射
+    private Long categoryId; // 对应 category_id
+    private BigDecimal price; // 价格
+    private BigDecimal originalPrice; // 原价
+    private Integer sales; // 销量
+    private Integer deleted; // 逻辑删除
 }
