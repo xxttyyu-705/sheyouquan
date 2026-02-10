@@ -19,6 +19,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/work")
+@CrossOrigin
 @Tag(name = "作品管理", description = "作品发布、查询、互动")
 public class WorkController {
     
@@ -34,10 +35,25 @@ public class WorkController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String categoryId,
             @RequestParam(required = false) String tags) {
         try {
-            Map<String, Object> result = workService.getWorkList(page, size, keyword, categoryId, tags);
+            // 处理分类ID，支持传入数字ID或字符串别名
+            Long catId = null;
+            if (categoryId != null && !categoryId.isEmpty()) {
+                try {
+                    catId = Long.parseLong(categoryId);
+                } catch (NumberFormatException e) {
+                    // 映射前端传递的字符串分类到数据库ID
+                    if ("portrait".equals(categoryId)) catId = 1L;
+                    else if ("landscape".equals(categoryId)) catId = 2L;
+                    else if ("street".equals(categoryId)) catId = 3L;
+                    else if ("documentary".equals(categoryId)) catId = 4L;
+                    else if ("other".equals(categoryId)) catId = 5L;
+                }
+            }
+            
+            Map<String, Object> result = workService.getWorkList(page, size, keyword, catId, tags);
             return Result.success(result);
         } catch (Exception e) {
             e.printStackTrace(); // 在控制台打印具体的错误堆栈

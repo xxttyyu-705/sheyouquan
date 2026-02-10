@@ -27,9 +27,8 @@ public class WorkService extends ServiceImpl<WorkMapper, Work> {
      * 分页查询作品列表
      */
     public Map<String, Object> getWorkList(Integer page, Integer size, String keyword, Long categoryId, String tags) {
-        // 临时改用原生查询测试
-        Page<Work> workPage = new Page<>(page, size);
-        Page<Work> result = workMapper.selectPage(workPage, null);
+        Page<WorkDTO> workPage = new Page<>(page, size);
+        Page<WorkDTO> result = workMapper.selectWorkPage(workPage, keyword, categoryId, tags);
         
         Map<String, Object> map = new HashMap<>();
         map.put("list", result.getRecords());
@@ -69,8 +68,7 @@ public class WorkService extends ServiceImpl<WorkMapper, Work> {
      * 获取作品详情
      */
     public Work getWorkDetail(Long id) {
-        // 暂时改用内置的 getById，避免 selectWorkDetail 在 XML 中未定义的错误
-        return this.getById(id);
+        return this.getById(id); // 保持使用 getById 获取实体，统计更新在 Controller 中调用
     }
     
     /**
