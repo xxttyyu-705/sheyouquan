@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
  * @since 1.0.0
  */
 @Data
-@TableName("comments")
+@TableName("comment")
 public class Comment {
     
     @TableId(type = IdType.AUTO)

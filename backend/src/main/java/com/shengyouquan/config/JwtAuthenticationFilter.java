@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -27,9 +26,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtils jwtUtils;
-
-    @Autowired
-    private UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -54,8 +50,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         );
                         
                         // 创建认证令牌
-                        UsernamePasswordAuthenticationToken authentication = 
-                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        // 将 userId 作为 principal 存储，方便后续获取
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(userId, null, userDetails.getAuthorities());
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         
                         // 设置认证信息到安全上下文
@@ -81,42 +78,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7);
         }
         return null;
-    }
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        // 对公开接口不进行JWT过滤
-        String path = request.getRequestURI();
-        String contextPath = request.getContextPath();
-        
-        // 移除上下文路径，获取相对路径
-        String relativePath = path;
-        if (contextPath != null && !contextPath.isEmpty() && path.startsWith(contextPath)) {
-            relativePath = path.substring(contextPath.length());
-        }
-        
-        return relativePath.startsWith("/api/v1/user/login") ||
-               relativePath.startsWith("/api/v1/user/register") ||
-               relativePath.startsWith("/api/v1/user/check/") ||
-               relativePath.startsWith("/api/v1/work/list") ||
-               relativePath.startsWith("/api/v1/work/detail/") ||
-               relativePath.startsWith("/api/v1/work/hot") ||
-               relativePath.startsWith("/api/v1/course/list") ||
-               relativePath.startsWith("/api/v1/course/detail/") ||
-               relativePath.startsWith("/api/v1/course/recommended") ||
-               relativePath.startsWith("/api/v1/product/list") ||
-               relativePath.startsWith("/api/v1/product/detail/") ||
-               relativePath.startsWith("/api/v1/post/list") ||
-               relativePath.startsWith("/api/v1/post/detail/") ||
-               relativePath.startsWith("/api/v1/comment/list") ||
-               relativePath.startsWith("/api/v1/point/balance") ||
-               relativePath.startsWith("/api/v1/point/history") ||
-               relativePath.startsWith("/api/v1/exchange/list") ||
-               relativePath.startsWith("/api/v1/file/upload/") ||
-               relativePath.startsWith("/api/v1/file/") ||
-               relativePath.startsWith("/swagger-ui") ||
-               relativePath.startsWith("/v3/api-docs") ||
-               relativePath.startsWith("/swagger-resources") ||
-               relativePath.startsWith("/webjars");
     }
 }

@@ -469,30 +469,17 @@ const uploadHeaders = computed(() => {
 const loadUsers = async () => {
   userLoading.value = true
   try {
-    // 模拟数据
-    const mockUsers = [
-      {
-        id: 1,
-        username: 'admin',
-        nickname: '管理员',
-        email: 'admin@shengyouquan.com',
-        points: 1000,
-        status: 1,
-        createTime: '2024-01-01 10:00:00'
-      },
-      {
-        id: 2,
-        username: 'user1',
-        nickname: '摄影师小明',
-        email: 'user1@example.com',
-        points: 500,
-        status: 1,
-        createTime: '2024-01-02 14:30:00'
+    const response = await axios.get('/admin/users', {
+      params: {
+        page: userPage.value,
+        size: userSize.value,
+        keyword: userFilters.keyword
       }
-    ]
-    
-    users.value = mockUsers
-    userTotal.value = mockUsers.length
+    })
+    if (response.data.code === 200) {
+      users.value = response.data.data.list
+      userTotal.value = response.data.data.total
+    }
   } catch (error) {
     ElMessage.error('加载用户列表失败')
   } finally {
@@ -504,21 +491,17 @@ const loadUsers = async () => {
 const loadWorks = async () => {
   workLoading.value = true
   try {
-    // 模拟数据
-    const mockWorks = [
-      {
-        id: 1,
-        title: '城市夜景',
-        authorNickname: '摄影师小明',
-        viewCount: 120,
-        likeCount: 25,
-        status: 1,
-        createTime: '2024-01-05 14:30:00'
+    const response = await axios.get('/work/list', {
+      params: {
+        page: workPage.value,
+        size: workSize.value,
+        keyword: workFilters.keyword
       }
-    ]
-    
-    works.value = mockWorks
-    workTotal.value = mockWorks.length
+    })
+    if (response.data.code === 200) {
+      works.value = response.data.data.list
+      workTotal.value = response.data.data.total
+    }
   } catch (error) {
     ElMessage.error('加载作品列表失败')
   } finally {
@@ -530,30 +513,17 @@ const loadWorks = async () => {
 const loadCourses = async () => {
   courseLoading.value = true
   try {
-    // 模拟数据
-    const mockCourses = [
-      {
-        id: 1,
-        title: '摄影入门基础',
-        teacherName: '张老师',
-        price: 0,
-        isFree: 1,
-        studentCount: 150,
-        status: 1
-      },
-      {
-        id: 2,
-        title: '人像摄影技巧',
-        teacherName: '李老师',
-        price: 199,
-        isFree: 0,
-        studentCount: 80,
-        status: 1
+    const response = await axios.get('/course/list', {
+      params: {
+        page: coursePage.value,
+        size: courseSize.value,
+        keyword: courseFilters.keyword
       }
-    ]
-    
-    courses.value = mockCourses
-    courseTotal.value = mockCourses.length
+    })
+    if (response.data.code === 200) {
+      courses.value = response.data.data.list
+      courseTotal.value = response.data.data.total
+    }
   } catch (error) {
     ElMessage.error('加载课程列表失败')
   } finally {

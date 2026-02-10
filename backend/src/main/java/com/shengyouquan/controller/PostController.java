@@ -5,6 +5,7 @@ import com.shengyouquan.entity.Post;
 import com.shengyouquan.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Map;
 
@@ -16,7 +17,6 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/post")
-@CrossOrigin
 public class PostController {
     
     @Autowired
@@ -51,14 +51,12 @@ public class PostController {
      * 创建帖子
      */
     @PostMapping("/create")
-    public Result<String> createPost(
-            @RequestHeader(value = "X-User-Id", required = false) Long userId,
-            @RequestHeader(value = "X-Username", required = false) String username,
-            @RequestBody Post post) {
+    public Result<String> createPost(@RequestBody Post post) {
         
-        // 如果没有提供用户ID和用户名，使用默认值（用于测试）
-        Long actualUserId = userId != null ? userId : 1L;
-        String actualUsername = username != null ? username : "testuser";
+        // 从安全上下文中获取当前登录用户ID
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long actualUserId = (principal instanceof Long) ? (Long) principal : 1L;
+        String actualUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         
         post.setUserId(actualUserId);
         post.setUsername(actualUsername);

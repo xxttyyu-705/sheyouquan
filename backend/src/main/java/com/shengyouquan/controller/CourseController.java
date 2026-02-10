@@ -5,6 +5,7 @@ import com.shengyouquan.entity.Course;
 import com.shengyouquan.service.CourseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,13 +34,14 @@ public class CourseController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Integer difficulty) {
         try {
-            Map<String, Object> result = courseService.getCourseList(page, size, keyword, category, difficulty);
+            Map<String, Object> result = courseService.getCourseList(page, size, keyword, categoryId, difficulty);
             return Result.success(result);
         } catch (Exception e) {
-            return Result.error("获取课程列表失败");
+            e.printStackTrace(); // 打印错误堆栈，方便排查数据库连接或SQL问题
+            return Result.error("获取课程列表失败: " + e.getMessage());
         }
     }
     
@@ -53,6 +55,7 @@ public class CourseController {
             Map<String, Object> result = courseService.getRecommendedCourses(limit);
             return Result.success(result);
         } catch (Exception e) {
+            e.printStackTrace();
             return Result.error("获取推荐课程失败");
         }
     }
@@ -62,7 +65,7 @@ public class CourseController {
      */
     @GetMapping("/detail/{id}")
     @Operation(summary = "课程详情", description = "获取课程详细信息")
-    public Result<?> getCourseDetail(@PathVariable Long id) {
+    public Result<Course> getCourseDetail(@PathVariable Long id) {
         try {
             Course course = courseService.getCourseDetail(id);
             if (course == null) {
@@ -70,6 +73,7 @@ public class CourseController {
             }
             return Result.success(course);
         } catch (Exception e) {
+            e.printStackTrace();
             return Result.error("获取课程详情失败");
         }
     }
@@ -84,6 +88,7 @@ public class CourseController {
             Course savedCourse = courseService.createCourse(course);
             return Result.success("创建成功", savedCourse);
         } catch (Exception e) {
+            e.printStackTrace();
             return Result.error("创建课程失败");
         }
     }
@@ -93,15 +98,16 @@ public class CourseController {
      */
     @PostMapping("/learn/{id}")
     @Operation(summary = "开始学习", description = "更新课程学习人数")
-    public Result<String> learnCourse(@PathVariable Long id,
-                                      @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+    public Result<String> learnCourse(@PathVariable Long id) {
         try {
-            // 如果没有提供用户ID，使用默认值1（用于测试）
-            Long actualUserId = userId != null ? userId : 1L;
+            // 从安全上下文中获取当前登录用户ID
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Long actualUserId = (principal instanceof Long) ? (Long) principal : 1L;
             
             courseService.updateStudentCount(id);
             return Result.success("学习记录已更新");
         } catch (Exception e) {
+            e.printStackTrace();
             return Result.error("操作失败");
         }
     }

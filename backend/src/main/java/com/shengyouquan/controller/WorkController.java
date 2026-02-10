@@ -5,6 +5,7 @@ import com.shengyouquan.entity.Work;
 import com.shengyouquan.service.WorkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +40,7 @@ public class WorkController {
             Map<String, Object> result = workService.getWorkList(page, size, keyword, categoryId, tags);
             return Result.success(result);
         } catch (Exception e) {
+            e.printStackTrace(); // 在控制台打印具体的错误堆栈
             return Result.error("获取作品列表失败");
         }
     }
@@ -64,7 +66,7 @@ public class WorkController {
     @Operation(summary = "作品详情", description = "获取作品详细信息")
     public Result<?> getWorkDetail(@PathVariable Long id) {
         try {
-            // 更新浏览数
+            // 现在可以启用了，因为我们在 Mapper 中添加了注解实现
             workService.updateWorkStats(id, "view");
             
             var workDetail = workService.getWorkDetail(id);
@@ -73,7 +75,8 @@ public class WorkController {
             }
             return Result.success(workDetail);
         } catch (Exception e) {
-            return Result.error("获取作品详情失败");
+            e.printStackTrace(); // 在后端控制台打印堆栈
+            return Result.error("获取作品详情失败: " + e.getMessage()); // 返回具体错误给前端
         }
     }
     
@@ -84,9 +87,10 @@ public class WorkController {
     @Operation(summary = "发布作品", description = "发布新的摄影作品")
     public Result<Work> publishWork(@RequestBody Work work) {
         try {
-            // 这里应该从token中获取用户ID
-            // 暂时从请求中获取，实际应该通过拦截器或认证上下文获取
-            // work.setUserId(getCurrentUserId());
+            // 从安全上下文中获取当前登录用户ID
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Long userId = (principal instanceof Long) ? (Long) principal : 1L;
+            work.setUserId(userId);
             
             Work savedWork = workService.publishWork(work);
             return Result.success("发布成功", savedWork);
@@ -100,11 +104,11 @@ public class WorkController {
      */
     @PostMapping("/like/{id}")
     @Operation(summary = "点赞作品", description = "点赞或取消点赞作品")
-    public Result<String> toggleLike(@PathVariable Long id, 
-                                     @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+    public Result<String> toggleLike(@PathVariable Long id) {
         try {
-            // 如果没有提供用户ID，使用默认值1（用于测试）
-            Long actualUserId = userId != null ? userId : 1L;
+            // 从安全上下文中获取 userId
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Long actualUserId = (principal instanceof Long) ? (Long) principal : 1L;
             
             workService.toggleLike(id, actualUserId);
             return Result.success("操作成功");
@@ -118,11 +122,10 @@ public class WorkController {
      */
     @PostMapping("/collect/{id}")
     @Operation(summary = "收藏作品", description = "收藏或取消收藏作品")
-    public Result<String> toggleCollect(@PathVariable Long id,
-                                        @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+    public Result<String> toggleCollect(@PathVariable Long id) {
         try {
-            // 如果没有提供用户ID，使用默认值1（用于测试）
-            Long actualUserId = userId != null ? userId : 1L;
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Long actualUserId = (principal instanceof Long) ? (Long) principal : 1L;
             
             workService.toggleCollect(id, actualUserId);
             return Result.success("操作成功");

@@ -1,5 +1,6 @@
 package com.shengyouquan.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.shengyouquan.entity.Course;
@@ -25,11 +26,24 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
     /**
      * 分页查询课程列表
      */
-    public Map<String, Object> getCourseList(Integer page, Integer size, String keyword, String category, Integer difficulty) {
+    public Map<String, Object> getCourseList(Integer page, Integer size, String keyword, Long categoryId, Integer difficulty) {
         Page<Course> coursePage = new Page<>(page, size);
-        // 这里需要创建CourseMapper的自定义查询方法
-        // 暂时使用基础查询
-        Page<Course> result = courseMapper.selectPage(coursePage, null);
+        LambdaQueryWrapper<Course> wrapper = new LambdaQueryWrapper<>();
+        
+        // 添加基础过滤条件
+        wrapper.eq(Course::getStatus, 1); 
+        
+        if (keyword != null && !keyword.isEmpty()) {
+            wrapper.like(Course::getTitle, keyword);
+        }
+        if (categoryId != null) {
+            wrapper.eq(Course::getCategoryId, categoryId);
+        }
+        if (difficulty != null) {
+            wrapper.eq(Course::getDifficulty, difficulty);
+        }
+        
+        Page<Course> result = courseMapper.selectPage(coursePage, wrapper);
         
         Map<String, Object> map = new HashMap<>();
         map.put("list", result.getRecords());

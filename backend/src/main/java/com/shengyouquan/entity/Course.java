@@ -43,12 +43,14 @@ public class Course implements Serializable {
     /**
      * 课程视频URL
      */
+    @TableField(exist = false)
     private String videoUrl;
     
     /**
      * 课程分类
      */
-    private String category;
+    @TableField("category_id")
+    private Long categoryId;
     
     /**
      * 课程难度：1-入门，2-中级，3-高级
@@ -78,6 +80,7 @@ public class Course implements Serializable {
     /**
      * 讲师名称
      */
+    @TableField(exist = false)
     private String teacherName;
     
     /**

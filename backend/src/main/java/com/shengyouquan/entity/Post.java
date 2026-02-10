@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
  * @since 1.0.0
  */
 @Data
-@TableName("posts")
+@TableName("post")
 public class Post {
     
     @TableId(type = IdType.AUTO)

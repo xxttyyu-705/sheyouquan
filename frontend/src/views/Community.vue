@@ -41,7 +41,7 @@
             <p>{{ post.content }}</p>
             <div v-if="post.images" class="post-images">
               <img 
-                v-for="(img, idx) in JSON.parse(post.images)" 
+                v-for="(img, idx) in safeParseImages(post.images)" 
                 :key="idx" 
                 :src="img" 
                 :alt="'图片' + (idx + 1)"
@@ -154,12 +154,12 @@
             </div>
             <div class="post-text">{{ selectedPost?.content }}</div>
             <div v-if="selectedPost?.images" class="post-images">
-              <img 
-                v-for="(img, idx) in JSON.parse(selectedPost.images)" 
-                :key="idx" 
-                :src="img" 
+              <img
+                v-for="(img, idx) in safeParseImages(selectedPost.images)"
+                :key="idx"
+                :src="img"
                 :alt="'图片' + (idx + 1)"
-                @click="viewImage(img)"
+                @click.stop="viewImage(img)"
               />
             </div>
           </div>
@@ -600,6 +600,16 @@ const formatDate = (dateStr) => {
 onMounted(() => {
   loadPosts()
 })
+
+// 安全解析图片 JSON
+const safeParseImages = (imagesStr) => {
+  try {
+    return imagesStr ? JSON.parse(imagesStr) : []
+  } catch (e) {
+    console.error('解析图片失败:', e)
+    return []
+  }
+}
 </script>
 
 <style scoped>
