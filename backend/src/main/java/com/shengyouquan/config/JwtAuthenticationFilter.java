@@ -28,6 +28,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private JwtUtils jwtUtils;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        // 使用 endsWith 或 contains 来匹配，忽略可能存在的 /api/v1 前缀
+        return path.endsWith("/user/login") || 
+               path.endsWith("/user/register") ||
+               path.endsWith("/post/list") ||
+               path.endsWith("/work/list") ||
+               path.endsWith("/course/list") ||
+               path.endsWith("/product/list") ||
+               path.contains("/file/");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         
