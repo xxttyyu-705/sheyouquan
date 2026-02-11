@@ -53,6 +53,7 @@ public class WebSecurityConfig {
                     AntPathRequestMatcher.antMatcher("/work/detail/**"),
                     AntPathRequestMatcher.antMatcher("/work/hot"),
                     AntPathRequestMatcher.antMatcher("/course/list"),
+                    AntPathRequestMatcher.antMatcher("/course/learn/**"),
                     AntPathRequestMatcher.antMatcher("/course/detail/**"),
                     AntPathRequestMatcher.antMatcher("/course/recommended"),
                     AntPathRequestMatcher.antMatcher("/product/list"),

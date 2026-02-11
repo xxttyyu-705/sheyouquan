@@ -60,9 +60,11 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
     public Map<String, Object> getRecommendedCourses(Integer limit) {
         // 暂时返回热门课程（按学习人数排序）
         Page<Course> coursePage = new Page<>(1, limit);
-        // 这里应该有自定义查询方法
-        Page<Course> result = courseMapper.selectPage(coursePage, null);
+        LambdaQueryWrapper<Course> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Course::getStatus, 1);
+        wrapper.orderByDesc(Course::getStudentCount);
         
+        Page<Course> result = courseMapper.selectPage(coursePage, wrapper);
         return new HashMap<String, Object>() {{
             put("list", result.getRecords());
         }};
@@ -92,7 +94,8 @@ public class CourseService extends ServiceImpl<CourseMapper, Course> {
     public void updateStudentCount(Long courseId) {
         Course course = courseMapper.selectById(courseId);
         if (course != null) {
-            course.setStudentCount(course.getStudentCount() + 1);
+            Integer currentCount = course.getStudentCount();
+            course.setStudentCount((currentCount == null ? 0 : currentCount) + 1);
             courseMapper.updateById(course);
         }
     }

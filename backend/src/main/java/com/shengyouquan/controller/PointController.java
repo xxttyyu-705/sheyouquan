@@ -3,6 +3,7 @@ package com.shengyouquan.controller;
 import com.shengyouquan.common.Result;
 import com.shengyouquan.service.PointService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -25,7 +26,10 @@ public class PointController {
      * 获取用户积分余额
      */
     @GetMapping("/balance")
-    public Result<Integer> getBalance(@RequestHeader("X-User-Id") Long userId) {
+    public Result<Integer> getBalance() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = (principal instanceof Long) ? (Long) principal : 1L;
+        
         Integer balance = pointService.getUserPoints(userId);
         return Result.success(balance);
     }
@@ -35,9 +39,11 @@ public class PointController {
      */
     @GetMapping("/history")
     public Result<Map<String, Object>> getHistory(
-            @RequestHeader("X-User-Id") Long userId,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = (principal instanceof Long) ? (Long) principal : 1L;
+        
         Map<String, Object> history = pointService.getPointHistory(userId, page, size);
         return Result.success(history);
     }

@@ -19,6 +19,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/course")
+@CrossOrigin
 @Tag(name = "课程管理", description = "课程查询、购买、学习")
 public class CourseController {
     
@@ -100,10 +101,6 @@ public class CourseController {
     @Operation(summary = "开始学习", description = "更新课程学习人数")
     public Result<String> learnCourse(@PathVariable Long id) {
         try {
-            // 从安全上下文中获取当前登录用户ID
-            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            Long actualUserId = (principal instanceof Long) ? (Long) principal : 1L;
-            
             courseService.updateStudentCount(id);
             return Result.success("学习记录已更新");
         } catch (Exception e) {

@@ -338,10 +338,6 @@ const showProductDetail = (product) => {
 
 // 显示兑换弹窗
 const showExchangeDialog = (product) => {
-  if (!userStore.isLoggedIn) {
-    ElMessage.warning('请先登录')
-    return
-  }
   
   exchangeProduct.value = product
   showExchange.value = true
