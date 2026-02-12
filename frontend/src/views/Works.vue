@@ -146,7 +146,7 @@
             :on-remove="handleImagesRemove"
             :on-preview="handlePreview"
             :before-upload="beforeImageUpload"
-            :file-list="imageList"
+            v-model:file-list="imageList"
           >
             <el-icon><Plus /></el-icon>
           </el-upload>
@@ -238,6 +238,7 @@
 
     <!-- 图片查看器 -->
     <div v-if="showImageViewer" class="image-viewer" @click="showImageViewer = false">
+      <el-icon class="close-btn"><Close /></el-icon>
       <img :src="currentImage" alt="查看图片" @click.stop />
     </div>
   </div>
@@ -247,7 +248,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, View, Star, ChatDotRound } from '@element-plus/icons-vue'
+import { Plus, Search, View, Star, ChatDotRound, Close } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { debounce } from 'lodash-es'
 
@@ -359,20 +360,20 @@ const handleCoverSuccess = (response) => {
 }
 
 // 作品图片上传成功
-const handleImagesSuccess = (response, file) => {
+const handleImagesSuccess = (response, uploadFile) => {
   if (response.code === 200) {
-    // 使用包含 uid 的文件对象，避免删除需点击两次
-    imageList.value.push({
-      ...file,
-      url: response.data.url
-    })
+    uploadFile.url = response.data.url
     updateImagesString()
+  } else {
+    ElMessage.error(response.message || '上传失败')
+    const index = imageList.value.indexOf(uploadFile)
+    if (index !== -1) imageList.value.splice(index, 1)
   }
 }
 
 // 删除作品图片
-const handleImagesRemove = (file) => {
-  imageList.value = imageList.value.filter(item => item.url !== file.url)
+const handleImagesRemove = (uploadFile, uploadFiles) => {
+  imageList.value = uploadFiles
   updateImagesString()
 }
 
@@ -765,7 +766,7 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000;
+  z-index: 9999;
   cursor: pointer;
 }
 
@@ -774,5 +775,13 @@ onMounted(() => {
   max-height: 90%;
   object-fit: contain;
   border-radius: 8px;
+}
+
+.close-btn {
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  font-size: 40px;
+  color: white;
 }
 </style>
