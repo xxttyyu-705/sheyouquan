@@ -53,7 +53,8 @@ public class FileService {
         File dest = new File(filePath);
         file.transferTo(dest);
         
-        return "/api/file/" + datePath + "/" + fileName;
+        // 返回相对于前端的访问路径，由 Vite 代理转发到后端
+        return "/file/" + datePath + "/" + fileName;
     }
     
     /**
@@ -137,6 +138,6 @@ public class FileService {
      * 获取文件访问URL
      */
     public String getFileUrl(String filePath) {
-        return "/api/file/" + filePath;
+        return "/file/" + filePath;
     }
 }

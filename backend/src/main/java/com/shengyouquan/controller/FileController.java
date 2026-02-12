@@ -17,7 +17,7 @@ import java.util.Map;
  * @since 1.0.0
  */
 @RestController
-@RequestMapping("/file")
+@RequestMapping({"/file", "/api/v1/file"})
 @CrossOrigin
 public class FileController {
     
@@ -66,6 +66,20 @@ public class FileController {
     @GetMapping("/{filename:.+}")
     public ResponseEntity<byte[]> getFile(@PathVariable String filename) throws IOException {
         return fileService.getFile(filename);
+    }
+    
+    /**
+     * 按日期子目录获取文件（支持 /file/yyyy/MM/dd/xxx.jpg 形式的路径）
+     */
+    @GetMapping("/{year}/{month}/{day}/{filename:.+}")
+    public ResponseEntity<byte[]> getFileByDate(
+            @PathVariable String year,
+            @PathVariable String month,
+            @PathVariable String day,
+            @PathVariable String filename) throws IOException {
+        
+        String path = year + "/" + month + "/" + day + "/" + filename;
+        return fileService.getFile(path);
     }
     
     /**

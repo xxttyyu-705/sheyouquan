@@ -144,6 +144,7 @@
             list-type="picture-card"
             :on-success="handleImagesSuccess"
             :on-remove="handleImagesRemove"
+            :on-preview="handlePreview"
             :before-upload="beforeImageUpload"
             :file-list="imageList"
           >
@@ -234,15 +235,23 @@
         </div>
       </div>
     </el-dialog>
+
+    <!-- 图片查看器 -->
+    <div v-if="showImageViewer" class="image-viewer" @click="showImageViewer = false">
+      <img :src="currentImage" alt="查看图片" @click.stop />
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, View, Star, ChatDotRound } from '@element-plus/icons-vue'
 import axios from 'axios'
 import { debounce } from 'lodash-es'
+
+const router = useRouter()
 
 const loading = ref(false)
 const publishing = ref(false)
@@ -252,6 +261,10 @@ const works = ref([])
 const selectedWork = ref(null)
 const publishFormRef = ref()
 const imageList = ref([])
+
+// 图片查看器
+const showImageViewer = ref(false)
+const currentImage = ref('')
 
 // 筛选条件
 const filters = reactive({
@@ -348,8 +361,9 @@ const handleCoverSuccess = (response) => {
 // 作品图片上传成功
 const handleImagesSuccess = (response, file) => {
   if (response.code === 200) {
+    // 使用包含 uid 的文件对象，避免删除需点击两次
     imageList.value.push({
-      name: file.name,
+      ...file,
       url: response.data.url
     })
     updateImagesString()
@@ -358,8 +372,15 @@ const handleImagesSuccess = (response, file) => {
 
 // 删除作品图片
 const handleImagesRemove = (file) => {
-  imageList.value = imageList.value.filter(item => item.uid !== file.uid)
+  imageList.value = imageList.value.filter(item => item.url !== file.url)
   updateImagesString()
+}
+
+// 预览大图
+const handlePreview = (file) => {
+  if (!file || !file.url) return
+  currentImage.value = file.url
+  showImageViewer.value = true
 }
 
 // 更新图片字符串
@@ -390,6 +411,13 @@ const handlePublish = async () => {
   
   await publishFormRef.value.validate(async (valid) => {
     if (valid) {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        ElMessage.error('请先登录后再发布作品')
+        router.push('/login')
+        return
+      }
+
       publishing.value = true
       try {
         // 处理标签
@@ -724,5 +752,27 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
+}
+
+/* 图片查看器 */
+.image-viewer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  cursor: pointer;
+}
+
+.image-viewer img {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  border-radius: 8px;
 }
 </style>

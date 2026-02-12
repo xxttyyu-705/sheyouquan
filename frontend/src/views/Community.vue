@@ -346,8 +346,12 @@ const loadPosts = async () => {
     loading.value = true
     const params = {
       page: currentPage.value,
-      size: 10,
-      keyword: searchKeyword.value
+      size: 10
+    }
+    
+    // 只有当搜索关键词不为空时才添加到参数中
+    if (searchKeyword.value && searchKeyword.value.trim()) {
+      params.keyword = searchKeyword.value.trim()
     }
     
     const response = await axios.get('/post/list', { params })

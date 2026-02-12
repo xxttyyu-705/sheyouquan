@@ -346,7 +346,7 @@
         </el-form-item>
         <el-form-item label="封面图" prop="coverImage">
           <el-upload
-            action="/file/upload"
+            action="/file/upload/image"
             :headers="uploadHeaders"
             :show-file-list="false"
             :on-success="handleCourseCoverSuccess"

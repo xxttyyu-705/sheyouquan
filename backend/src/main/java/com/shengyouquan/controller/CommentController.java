@@ -4,6 +4,8 @@ import com.shengyouquan.common.Result;
 import com.shengyouquan.entity.Comment;
 import com.shengyouquan.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -37,16 +39,28 @@ public class CommentController {
     
     /**
      * 创建评论
+     * 统一从 Spring Security 上下文中获取当前登录用户，避免前端单独传用户信息。
      */
     @PostMapping("/create")
-    public Result<String> createComment(
-            @RequestHeader("X-User-Id") Long userId,
-            @RequestHeader("X-Username") String username,
-            @RequestBody Comment comment) {
-        
+    public Result<String> createComment(@RequestBody Comment comment) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return Result.error("未登录或登录已失效");
+        }
+
+        // 在 JwtAuthenticationFilter 中，principal 存的是 userId
+        Long userId = (authentication.getPrincipal() instanceof Long)
+                ? (Long) authentication.getPrincipal()
+                : null;
+        String username = authentication.getName();
+
+        if (userId == null) {
+            return Result.error("获取用户信息失败");
+        }
+
         comment.setUserId(userId);
         comment.setUsername(username);
-        
+
         if (commentService.createComment(comment)) {
             return Result.success("评论成功");
         }
@@ -55,16 +69,27 @@ public class CommentController {
     
     /**
      * 回复评论
+     * 同样从安全上下文中获取当前登录用户。
      */
     @PostMapping("/reply")
-    public Result<String> replyComment(
-            @RequestHeader("X-User-Id") Long userId,
-            @RequestHeader("X-Username") String username,
-            @RequestBody Comment comment) {
-        
+    public Result<String> replyComment(@RequestBody Comment comment) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return Result.error("未登录或登录已失效");
+        }
+
+        Long userId = (authentication.getPrincipal() instanceof Long)
+                ? (Long) authentication.getPrincipal()
+                : null;
+        String username = authentication.getName();
+
+        if (userId == null) {
+            return Result.error("获取用户信息失败");
+        }
+
         comment.setUserId(userId);
         comment.setUsername(username);
-        
+
         if (commentService.replyComment(comment)) {
             return Result.success("回复成功");
         }

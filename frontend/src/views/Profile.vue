@@ -11,7 +11,7 @@
               </el-avatar>
               <el-upload
                 class="upload-trigger"
-                action="/file/upload"
+                action="/file/upload/image"
                 :headers="uploadHeaders"
                 :show-file-list="false"
                 :on-success="handleAvatarSuccess"
@@ -322,19 +322,28 @@ const loadPointsRecords = async () => {
   }
 }
 
-// 加载我的作品
+// 加载我的作品（从当前登录用户获取 userId）
 const loadMyWorks = async () => {
   try {
-    // 调用后端API获取我的作品
-    const response = await axios.get('/work/user/1?page=1&size=10')
+    const userId = localStorage.getItem('userId')
+    if (!userId) {
+      ElMessage.error('请先登录后再查看作品')
+      myWorks.value = []
+      return
+    }
+
+    const response = await axios.get(`/work/user/${userId}`, {
+      params: { page: 1, size: 10 }
+    })
     const { code, data } = response.data
     
     if (code === 200) {
       myWorks.value = data.list || []
+    } else {
+      myWorks.value = []
     }
   } catch (error) {
     ElMessage.error('加载作品失败')
-    // 如果API调用失败，使用空数组
     myWorks.value = []
   }
 }

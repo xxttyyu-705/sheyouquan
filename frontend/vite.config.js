@@ -56,6 +56,12 @@ export default defineConfig({
         secure: false,
         ws: true
       },
+      '/file': {
+        target: 'http://localhost:8082/api/v1',
+        changeOrigin: true,
+        secure: false,
+        ws: true
+      },
       '/order': {
         target: 'http://localhost:8082/api/v1',
         changeOrigin: true,
