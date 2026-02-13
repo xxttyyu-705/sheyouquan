@@ -67,8 +67,8 @@ public class WorkService extends ServiceImpl<WorkMapper, Work> {
     /**
      * 获取作品详情
      */
-    public Work getWorkDetail(Long id) {
-        return this.getById(id); // 保持使用 getById 获取实体，统计更新在 Controller 中调用
+    public WorkDTO getWorkDetail(Long id) {
+        return workMapper.selectWorkDetail(id);
     }
     
     /**

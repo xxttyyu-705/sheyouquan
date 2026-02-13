@@ -412,12 +412,14 @@ const handlePublish = async () => {
   
   await publishFormRef.value.validate(async (valid) => {
     if (valid) {
-      const token = localStorage.getItem('token')
+      let token = localStorage.getItem('token')
       if (!token) {
         ElMessage.error('请先登录后再发布作品')
         router.push('/login')
         return
       }
+      // 移除可能存在的引号，确保Token格式正确
+      token = token.replace(/^"|"$/g, '')
 
       publishing.value = true
       try {
@@ -429,7 +431,12 @@ const handlePublish = async () => {
           shootTime: publishForm.shootTime ? new Date(publishForm.shootTime).toISOString() : null
         }
         
-        const response = await axios.post('/work/publish', formData)
+        const response = await axios.post('/work/publish', formData, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
         const { code, message } = response.data
         
         if (code === 200) {
@@ -441,7 +448,16 @@ const handlePublish = async () => {
           ElMessage.error(message || '发布失败')
         }
       } catch (error) {
-        ElMessage.error('发布失败，请稍后重试')
+        console.error('发布失败:', error)
+        if (error.response && error.response.status === 403) {
+          ElMessage.error('登录已过期，请重新登录')
+          // 清除无效token并跳转登录
+          localStorage.removeItem('token')
+          showPublishDialog.value = false
+          router.push('/login')
+        } else {
+          ElMessage.error(error.response?.data?.message || error.message || '发布失败，请稍后重试')
+        }
       } finally {
         publishing.value = false
       }

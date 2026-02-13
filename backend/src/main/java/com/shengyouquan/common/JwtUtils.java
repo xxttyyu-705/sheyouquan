@@ -130,10 +130,17 @@ public class JwtUtils {
         if (secret != null && !secret.isEmpty()) {
             // 使用secret作为种子生成符合HS512要求的密钥
             byte[] keyBytes = secret.getBytes();
+            
             // 确保密钥长度至少为512位（64字节）
             if (keyBytes.length < 64) {
-                // 如果密钥太短，使用Keys.secretKeyFor生成安全密钥
-                return Keys.secretKeyFor(SignatureAlgorithm.HS512);
+                // 使用 SHA-512 对 secret 进行哈希，生成固定长度的 64 字节密钥
+                try {
+                    java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-512");
+                    byte[] hashedBytes = digest.digest(keyBytes);
+                    return Keys.hmacShaKeyFor(hashedBytes);
+                } catch (java.security.NoSuchAlgorithmException e) {
+                    throw new RuntimeException("SHA-512 algorithm not found", e);
+                }
             }
             return Keys.hmacShaKeyFor(keyBytes);
         } else {
