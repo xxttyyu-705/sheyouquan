@@ -373,7 +373,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
-import axios from 'axios'
+import axios from '@/utils/request'
 
 const activeTab = ref('users')
 

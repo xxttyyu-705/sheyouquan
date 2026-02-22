@@ -290,7 +290,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useUserStore } from '../stores/user'
-import axios from 'axios'
+import axios from '../utils/request'
 import { ElMessage } from 'element-plus'
 
 const userStore = useUserStore()

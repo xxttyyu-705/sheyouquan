@@ -55,6 +55,8 @@
     <!-- 分页 -->
     <div class="pagination" v-if="works.length > 0">
       <el-pagination
+        background
+        layout="total, prev, pager, next, jumper"
         v-model:current-page="pagination.page"
         v-model:page-size="pagination.size"
         :total="pagination.total"
@@ -249,7 +251,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, View, Star, ChatDotRound, Close } from '@element-plus/icons-vue'
-import axios from 'axios'
+import axios from '@/utils/request'
 import { debounce } from 'lodash-es'
 
 const router = useRouter()

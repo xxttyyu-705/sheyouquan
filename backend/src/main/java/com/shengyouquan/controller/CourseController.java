@@ -9,7 +9,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import com.shengyouquan.entity.CourseComment;
+import com.shengyouquan.entity.CourseChapter;
+import java.util.List;
 import java.util.Map;
+
 
 /**
  * 课程控制器
@@ -31,18 +35,39 @@ public class CourseController {
      */
     @GetMapping("/list")
     @Operation(summary = "课程列表", description = "分页查询课程列表")
-    public Result<Map<String, Object>> getCourseList(
+    public Result<java.util.Map<String, Object>> getCourseList(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Integer difficulty) {
         try {
-            Map<String, Object> result = courseService.getCourseList(page, size, keyword, categoryId, difficulty);
+            java.util.Map<String, Object> result = courseService.getCourseList(page, size, keyword, categoryId, difficulty);
             return Result.success(result);
         } catch (Exception e) {
             e.printStackTrace(); // 打印错误堆栈，方便排查数据库连接或SQL问题
             return Result.error("获取课程列表失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取我的课程（含进度）
+     */
+    @GetMapping("/my")
+    @Operation(summary = "我的课程", description = "获取用户参与的课程列表")
+    public Result<List<Map<String, Object>>> getMyCourses() {
+        try {
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (!(principal instanceof Long)) {
+                return Result.error("用户未登录或Token无效");
+            }
+            Long userId = (Long) principal;
+            
+            List<Map<String, Object>> list = courseService.getMyCourseList(userId);
+            return Result.success(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("获取我的课程失败");
         }
     }
     
@@ -106,6 +131,105 @@ public class CourseController {
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error("操作失败");
+        }
+    }
+
+    /**
+     * 获取课程章节
+     */
+    @GetMapping("/{id}/chapters")
+    @Operation(summary = "获取章节", description = "获取课程的所有章节")
+    public Result<List<CourseChapter>> getChapters(@PathVariable Long id) {
+        try {
+            List<CourseChapter> chapters = courseService.getCourseChapters(id);
+            return Result.success(chapters);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("获取章节失败");
+        }
+    }
+
+    /**
+     * 更新学习进度
+     */
+    @PostMapping("/{id}/chapter/{chapterId}/complete")
+    @Operation(summary = "更新进度", description = "标记章节为已完成")
+    public Result<String> updateProgress(@PathVariable Long id, @PathVariable Long chapterId) {
+        try {
+            // 获取当前登录用户ID
+            String userIdStr = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            // 如果principal是"anonymousUser"或其他非ID字符串，这里会抛出异常。
+            // 假设JwtAuthenticationFilter正确设置了principal为userId字符串
+            Long userId = Long.parseLong(userIdStr);
+            
+            courseService.updateProgress(userId, id, chapterId);
+            return Result.success("进度已更新");
+        } catch (NumberFormatException e) {
+             return Result.error("用户未登录或Token无效");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("更新进度失败");
+        }
+    }
+
+    /**
+     * 获取用户学习进度
+     */
+    @GetMapping("/{id}/progress")
+    @Operation(summary = "获取进度", description = "获取用户在某课程的学习进度")
+    public Result<Map<String, Object>> getProgress(@PathVariable Long id) {
+        try {
+            String userIdStr = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Long userId = Long.parseLong(userIdStr);
+            
+            Map<String, Object> progress = courseService.getUserProgress(userId, id);
+            return Result.success(progress);
+        } catch (NumberFormatException e) {
+             return Result.error("用户未登录或Token无效");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("获取进度失败");
+        }
+    }
+
+    /**
+     * 获取课程评论
+     */
+    @GetMapping("/{id}/comments")
+    @Operation(summary = "获取评论", description = "获取课程的所有评论")
+    public Result<List<CourseComment>> getComments(@PathVariable Long id) {
+        try {
+            List<CourseComment> comments = courseService.getCourseComments(id);
+            return Result.success(comments);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("获取评论失败");
+        }
+    }
+
+    /**
+     * 发表评论
+     */
+    @PostMapping("/{id}/comments")
+    @Operation(summary = "发表评论", description = "发表课程评论")
+    public Result<String> createComment(@PathVariable Long id, @RequestBody CourseComment comment) {
+        try {
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (!(principal instanceof Long)) {
+                return Result.error("用户未登录或Token无效");
+            }
+            Long userId = (Long) principal;
+            
+            comment.setCourseId(id);
+            comment.setUserId(userId);
+            
+            if (courseService.createCourseComment(comment)) {
+                return Result.success("评论成功");
+            }
+            return Result.error("评论失败");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("评论失败");
         }
     }
 }

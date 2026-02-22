@@ -3,12 +3,12 @@
     <el-container v-if="showLayout" class="layout-container">
       <el-header class="header">
         <div class="header-content">
-          <div class="logo" @click="$router.push('/')">
+          <div class="logo" @click="router.push('/')">
             <el-icon size="24"><Camera /></el-icon>
             <span>摄友圈</span>
           </div>
           <el-menu
-            :default-active="$route.path"
+            :default-active="route.path"
             mode="horizontal"
             router
             class="nav-menu"
@@ -21,20 +21,25 @@
             <el-menu-item v-if="isAdmin" index="/admin">管理</el-menu-item>
           </el-menu>
           <div class="user-info">
-            <el-dropdown @command="handleCommand">
-              <span class="user-dropdown">
-                <el-avatar :size="32" :src="user?.avatar">
-                  {{ user?.nickname?.charAt(0) || user?.username?.charAt(0) }}
-                </el-avatar>
-                <span class="username">{{ user?.nickname || user?.username }}</span>
-              </span>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item command="profile">个人中心</el-dropdown-item>
-                  <el-dropdown-item command="logout">退出登录</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+            <template v-if="isLoggedIn && user">
+              <el-dropdown @command="handleCommand">
+                <span class="user-dropdown">
+                  <el-avatar :size="32" :src="user.avatar">
+                    {{ user.nickname?.charAt(0) || user.username?.charAt(0) }}
+                  </el-avatar>
+                  <span class="username">{{ user.nickname || user.username }}</span>
+                </span>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="profile">个人中心</el-dropdown-item>
+                    <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </template>
+            <template v-else>
+              <el-button type="primary" plain @click="router.push('/login')">登录/注册</el-button>
+            </template>
           </div>
         </div>
       </el-header>
@@ -47,39 +52,38 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { Camera } from '@element-plus/icons-vue'
+import { computed, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { useUserStore } from '@/stores/user';
+import { Camera } from '@element-plus/icons-vue';
 
-const router = useRouter()
-const user = ref(null)
+const router = useRouter();
+const route = useRoute();
+const userStore = useUserStore();
+
+// 在应用加载时尝试从 localStorage 恢复登录状态到 Pinia
+onMounted(() => {
+  userStore.checkLoginStatus();
+});
 
 const showLayout = computed(() => {
-  const noLayoutRoutes = ['/login', '/register']
-  return !noLayoutRoutes.includes(router.currentRoute.value.path)
-})
+  const noLayoutRoutes = ['/login', '/register'];
+  return !noLayoutRoutes.includes(route.path);
+});
 
-const isAdmin = computed(() => {
-  return user.value?.role === 'admin'
-})
+// 从 Pinia store 获取用户状态
+const user = computed(() => userStore.user);
+const isLoggedIn = computed(() => userStore.isLoggedIn);
+const isAdmin = computed(() => userStore.isAdmin);
 
 const handleCommand = (command) => {
   if (command === 'profile') {
-    router.push('/profile')
+    router.push('/profile');
   } else if (command === 'logout') {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    localStorage.removeItem('userId')
-    router.push('/login')
+    userStore.logout();
+    router.push('/login');
   }
-}
-
-onMounted(() => {
-  const userData = localStorage.getItem('user')
-  if (userData) {
-    user.value = JSON.parse(userData)
-  }
-})
+};
 </script>
 
 <style scoped>

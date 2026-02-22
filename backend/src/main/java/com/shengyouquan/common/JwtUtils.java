@@ -90,6 +90,20 @@ public class JwtUtils {
     }
     
     /**
+     * 验证Token是否有效（验证签名和有效期）
+     */
+    public boolean validateToken(String token) {
+        try {
+            // parseClaimsJws会验证签名和有效期，如果失败会抛出异常
+            getClaimsFromToken(token);
+            return true;
+        } catch (Exception e) {
+            log.info("Invalid JWT token validation: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
      * 验证Token
      */
     public Boolean validateToken(String token, Long userId) {

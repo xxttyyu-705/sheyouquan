@@ -93,7 +93,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Picture, VideoPlay, ShoppingCart, ChatDotRound } from '@element-plus/icons-vue'
-import axios from 'axios'
+import axios from '@/utils/request'
 
 const stats = ref({
   userCount: 0,

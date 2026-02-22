@@ -144,7 +144,7 @@
                 </div>
                 <div class="course-actions">
                   <el-button type="primary" size="small" @click="continueCourse(course)">
-                    继续学习
+                    {{ course.progress > 0 ? '继续学习' : '开始学习' }}
                   </el-button>
                 </div>
               </div>
@@ -186,7 +186,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { View, Star, ChatDotRound } from '@element-plus/icons-vue'
-import axios from 'axios'
+import axios from '@/utils/request'
 
 const activeTab = ref('info')
 const loading = ref(false)
@@ -352,19 +352,14 @@ const loadMyWorks = async () => {
 const loadMyCourses = async () => {
   try {
     // 调用后端API获取我的课程
-    const response = await axios.get('/course/list?page=1&size=10')
+    const response = await axios.get('/course/my')
     const { code, data } = response.data
     
     if (code === 200) {
-      // 模拟学习进度数据
-      myCourses.value = (data.list || []).map(course => ({
-        ...course,
-        progress: Math.floor(Math.random() * 100) // 随机生成学习进度
-      }))
+      myCourses.value = data || []
     }
   } catch (error) {
     ElMessage.error('加载课程失败')
-    // 如果API调用失败，使用空数组
     myCourses.value = []
   }
 }
@@ -399,7 +394,7 @@ const loadMyOrders = async () => {
 
 // 继续学习
 const continueCourse = (course) => {
-  ElMessage.info(`继续学习: ${course.title}`)
+  router.push(`/course/learn/${course.id}`)
 }
 
 // 获取订单状态类型

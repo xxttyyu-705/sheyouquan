@@ -81,6 +81,8 @@ public class WorkService extends ServiceImpl<WorkMapper, Work> {
         work.setCommentCount(0);
         work.setCollectCount(0);
         work.setStatus(1);
+        work.setCreateTime(java.time.LocalDateTime.now());
+        work.setUpdateTime(java.time.LocalDateTime.now());
         
         save(work);
         return work;

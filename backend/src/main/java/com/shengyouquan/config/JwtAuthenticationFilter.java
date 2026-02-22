@@ -27,63 +27,46 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtils jwtUtils;
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getServletPath();
-        // 使用 startsWith 来匹配，忽略查询参数
-        return path.startsWith("/user/login") || 
-               path.startsWith("/user/register") ||
-               path.startsWith("/post/list") ||
-               path.startsWith("/post/detail") ||
-               path.startsWith("/comment/list") ||
-               path.startsWith("/work/list") ||
-               path.startsWith("/course/list") ||
-               path.startsWith("/product/list") ||
-               path.contains("/file/");
-    }
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        
+
         try {
             String jwt = getJwtFromRequest(request);
-            
-            if (jwt != null && !jwt.isEmpty()) {
-                try {
-                    // 从JWT中提取用户信息
-                    Long userId = jwtUtils.getUserIdFromToken(jwt);
-                    String username = jwtUtils.getUsernameFromToken(jwt);
-                    String role = jwtUtils.getRoleFromToken(jwt);
-                    
-                    if (userId != null && username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                        // 创建UserDetails对象
-                        UserDetails userDetails = new org.springframework.security.core.userdetails.User(
-                                username,
-                                "", // 密码不需要
-                                java.util.Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role))
-                        );
-                        
-                        // 创建认证令牌
-                        // 将 userId 作为 principal 存储，方便后续获取
-                        UsernamePasswordAuthenticationToken authentication =
-                                new UsernamePasswordAuthenticationToken(userId, null, userDetails.getAuthorities());
-                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        
-                        // 设置认证信息到安全上下文
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-                    }
-                } catch (Exception jwtException) {
-                    // JWT验证失败，可能是token无效或过期，记录日志但不中断请求
-                    logger.warn("JWT验证失败: " + jwtException.getMessage());
-                    // 清除无效的认证信息
-                    SecurityContextHolder.clearContext();
+
+            // 检查JWT是否存在且有效
+            if (jwt != null && jwtUtils.validateToken(jwt)) {
+                Long userId = jwtUtils.getUserIdFromToken(jwt);
+                String username = jwtUtils.getUsernameFromToken(jwt);
+                String role = jwtUtils.getRoleFromToken(jwt);
+
+                // 如果用户未认证，则设置认证信息
+                if (userId != null && username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = new org.springframework.security.core.userdetails.User(
+                            username,
+                            "", // 密码字段在此处不需要
+                            java.util.Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role))
+                    );
+
+                    // 创建认证令牌，并将userId作为principal
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(userId, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    // 在SecurityContext中设置认证信息
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
         } catch (Exception e) {
-            logger.error("处理JWT请求时发生错误", e);
+            // 记录认证过程中的任何错误
+            // 我们不在这里处理响应，而是让请求继续，
+            // 如果需要认证的端点没有获得认证，Spring Security会正确地处理它
+            logger.error("Cannot set user authentication: {}", e);
         }
-        
+
+        // 无论认证是否成功，都继续过滤器链
         filterChain.doFilter(request, response);
     }
 

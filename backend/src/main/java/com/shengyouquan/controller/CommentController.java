@@ -1,8 +1,10 @@
 package com.shengyouquan.controller;
 
 import com.shengyouquan.common.Result;
+import com.shengyouquan.dto.UserDTO;
 import com.shengyouquan.entity.Comment;
 import com.shengyouquan.service.CommentService;
+import com.shengyouquan.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,7 +25,18 @@ public class CommentController {
     
     @Autowired
     private CommentService commentService;
-    
+    @Autowired
+    private UserService userService;
+
+    private String getDisplayName(Long userId) {
+        try {
+            UserDTO dto = userService.getUserInfo(userId);
+            return (dto.getNickname() != null && !dto.getNickname().isEmpty()) ? dto.getNickname() : dto.getUsername();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     /**
      * 获取帖子评论列表
      */
@@ -52,14 +65,12 @@ public class CommentController {
         Long userId = (authentication.getPrincipal() instanceof Long)
                 ? (Long) authentication.getPrincipal()
                 : null;
-        String username = authentication.getName();
-
         if (userId == null) {
             return Result.error("获取用户信息失败");
         }
-
+        String displayName = getDisplayName(userId);
         comment.setUserId(userId);
-        comment.setUsername(username);
+        comment.setUsername(displayName != null ? displayName : String.valueOf(userId));
 
         if (commentService.createComment(comment)) {
             return Result.success("评论成功");
@@ -81,14 +92,12 @@ public class CommentController {
         Long userId = (authentication.getPrincipal() instanceof Long)
                 ? (Long) authentication.getPrincipal()
                 : null;
-        String username = authentication.getName();
-
         if (userId == null) {
             return Result.error("获取用户信息失败");
         }
-
+        String displayName = getDisplayName(userId);
         comment.setUserId(userId);
-        comment.setUsername(username);
+        comment.setUsername(displayName != null ? displayName : String.valueOf(userId));
 
         if (commentService.replyComment(comment)) {
             return Result.success("回复成功");

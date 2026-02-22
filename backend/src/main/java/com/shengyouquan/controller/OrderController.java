@@ -6,6 +6,7 @@ import com.shengyouquan.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -39,13 +40,18 @@ public class OrderController {
             @RequestParam Integer payType,
             @RequestParam(required = false) Integer usePoints) {
         try {
-            // 这里应该从token中获取用户ID
-            Long userId = 1L; // 暂时写死
+            // 获取当前登录用户ID
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (!(principal instanceof Long)) {
+                return Result.error("用户未登录或Token无效");
+            }
+            Long userId = (Long) principal;
             
             Order order = orderService.createOrder(userId, itemId, itemType, itemName, itemImage, price, payType, usePoints);
             return Result.success("订单创建成功", order);
         } catch (Exception e) {
-            return Result.error("创建订单失败");
+            e.printStackTrace();
+            return Result.error("创建订单失败: " + e.getMessage());
         }
     }
     
@@ -95,12 +101,17 @@ public class OrderController {
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) Integer payStatus) {
         try {
-            // 这里应该从token中获取用户ID
-            Long userId = 1L; // 暂时写死
+            // 获取当前登录用户ID
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (!(principal instanceof Long)) {
+                return Result.error("用户未登录或Token无效");
+            }
+            Long userId = (Long) principal;
             
             Map<String, Object> result = orderService.getUserOrders(userId, page, size, payStatus);
             return Result.success(result);
         } catch (Exception e) {
+            e.printStackTrace();
             return Result.error("获取订单列表失败");
         }
     }

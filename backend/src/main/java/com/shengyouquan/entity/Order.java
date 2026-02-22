@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
  * @since 1.0.0
  */
 @Data
-@TableName("order")
+@TableName("`order`")
 public class Order implements Serializable {
     
     private static final long serialVersionUID = 1L;
@@ -53,11 +53,13 @@ public class Order implements Serializable {
     /**
      * 商品图片
      */
+    @TableField(exist = false)
     private String itemImage;
     
     /**
-     * 商品价格
+     * 商品价格（对应数据库 amount）
      */
+    @TableField("amount")
     private BigDecimal price;
     
     /**
@@ -68,11 +70,13 @@ public class Order implements Serializable {
     /**
      * 支付方式：1-微信，2-支付宝，3-积分
      */
+    @TableField("pay_method")
     private Integer payType;
     
     /**
      * 支付状态：0-未支付，1-已支付，2-已取消，3-已退款
      */
+    @TableField("status")
     private Integer payStatus;
     
     /**
@@ -83,6 +87,7 @@ public class Order implements Serializable {
     /**
      * 使用积分
      */
+    @TableField(exist = false)
     private Integer usePoints;
     
     /**

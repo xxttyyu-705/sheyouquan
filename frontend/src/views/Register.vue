@@ -91,7 +91,7 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock, Message, Star, Camera } from '@element-plus/icons-vue'
-import axios from 'axios'
+import axios from '@/utils/request'
 
 const router = useRouter()
 const loading = ref(false)

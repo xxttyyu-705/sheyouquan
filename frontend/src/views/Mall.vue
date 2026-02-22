@@ -207,7 +207,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useUserStore } from '../stores/user'
-import axios from 'axios'
+import axios from '@/utils/request'
 import { ElMessage } from 'element-plus'
 
 const userStore = useUserStore()
@@ -290,8 +290,20 @@ const loadUserPoints = async () => {
     const response = await axios.get('/point/balance')
     if (response.data.code === 200) {
       userPoints.value = response.data.data
+    } else if (response.data.code === 401) {
+      // Token过期，清除登录状态并跳转到登录页
+      userStore.logout()
+      ElMessage.warning('登录已过期，请重新登录')
+      // 不需要手动跳转，axios拦截器会处理
+    } else {
+      ElMessage.error(response.data.message || '加载积分失败')
     }
   } catch (error) {
+    // 401 由 axios 拦截器统一提示并跳转登录，此处仅做静默处理
+    if (error.response?.status === 401) {
+      userPoints.value = 0
+      return
+    }
     console.error('加载积分失败:', error)
   }
 }
@@ -307,8 +319,20 @@ const loadExchangeRecords = async () => {
     })
     if (response.data.code === 200) {
       exchangeRecords.value = response.data.data.list
+    } else if (response.data.code === 401) {
+      // Token过期，清除登录状态并跳转到登录页
+      userStore.logout()
+      ElMessage.warning('登录已过期，请重新登录')
+      // 不需要手动跳转，axios拦截器会处理
+    } else {
+      ElMessage.error(response.data.message || '加载兑换记录失败')
     }
   } catch (error) {
+    // 401 由 axios 拦截器统一提示并跳转登录，此处仅做静默处理
+    if (error.response?.status === 401) {
+      exchangeRecords.value = []
+      return
+    }
     ElMessage.error('加载兑换记录失败')
   } finally {
     recordsLoading.value = false
@@ -368,11 +392,19 @@ const submitExchange = async () => {
       loadProducts()
       loadUserPoints()
       loadExchangeRecords()
+    } else if (response.data.code === 401) {
+      // Token过期，清除登录状态并跳转到登录页
+      userStore.logout()
+      ElMessage.warning('登录已过期，请重新登录')
+      // 不需要手动跳转，axios拦截器会处理
     } else {
       ElMessage.error(response.data.message || '兑换失败')
     }
   } catch (error) {
-    ElMessage.error('兑换失败，请稍后重试')
+    // 如果是401错误，axios拦截器会处理跳转
+    if (error.response?.status !== 401) {
+      ElMessage.error('兑换失败，请稍后重试')
+    }
   } finally {
     submitting.value = false
   }

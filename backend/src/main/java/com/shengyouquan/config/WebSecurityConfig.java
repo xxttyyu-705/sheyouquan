@@ -5,13 +5,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 
 /**
@@ -91,6 +90,9 @@ public class WebSecurityConfig {
                     "/point/balance",
                     "/point/history",
                     "/exchange/list",
+                    "/api/v1/point/balance",
+                    "/api/v1/point/history",
+                    "/api/v1/exchange/list",
                     "/file/upload/**", "/api/v1/file/upload/**",
                     "/file/**", "/api/v1/file/**",
                     "/community/**",
@@ -101,6 +103,19 @@ public class WebSecurityConfig {
                 ).permitAll()
                 // 其他接口需要认证
                 .anyRequest().authenticated()
+            )
+            // 异常处理：未授权返回401，权限不足返回403
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("{\"code\":401, \"message\":\"未授权或Token已过期，请重新登录\", \"data\":null}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.getWriter().write("{\"code\":403, \"message\":\"权限不足\", \"data\":null}");
+                })
             )
             // 添加JWT认证过滤器
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

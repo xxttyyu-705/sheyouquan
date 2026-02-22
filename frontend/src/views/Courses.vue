@@ -180,7 +180,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, VideoPlay } from '@element-plus/icons-vue'
-import axios from 'axios'
+import axios from '@/utils/request'
 import { debounce } from 'lodash-es'
 import { useRouter } from 'vue-router'
 
@@ -274,8 +274,8 @@ const handleLearn = async (course) => {
       await axios.post(`/course/learn/${course.id}`)
       ElMessage.success('开始学习')
       showDetailDialog.value = false
-      // 跳转到学习页面（这里可以扩展为视频播放页面）
-      ElMessage.info('即将跳转到学习页面')
+      // 跳转到学习页面
+      router.push(`/course/learn/${course.id}`)
     } catch (error) {
       ElMessage.error('操作失败')
     }
@@ -343,8 +343,9 @@ const handlePurchase = async () => {
         // 重置表单
         purchaseForm.payType = 1
         purchaseForm.usePoints = 0
-        // 重新加载课程列表
-        loadCourses()
+        
+        // 跳转到学习页面
+        router.push(`/course/learn/${selectedCourse.value.id}`)
       }
     } else {
       ElMessage.error(message || '购买失败')

@@ -1,9 +1,12 @@
 package com.shengyouquan.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper; // 添加导入
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.shengyouquan.entity.Order;
+import com.shengyouquan.entity.UserCourse;
 import com.shengyouquan.mapper.OrderMapper;
+import com.shengyouquan.mapper.UserCourseMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +27,9 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
     
     @Autowired
     private OrderMapper orderMapper;
+    
+    @Autowired
+    private UserCourseMapper userCourseMapper;
     
     /**
      * 创建订单
@@ -72,6 +78,24 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
         order.setPayTime(LocalDateTime.now());
         orderMapper.updateById(order);
         
+        // 如果是课程订单，添加用户课程记录
+        if (order.getItemType() == 1) { // 1-课程
+            // 检查是否已存在
+            LambdaQueryWrapper<UserCourse> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(UserCourse::getUserId, order.getUserId())
+                   .eq(UserCourse::getCourseId, order.getItemId());
+            
+            if (userCourseMapper.selectCount(wrapper) == 0) {
+                UserCourse userCourse = new UserCourse();
+                userCourse.setUserId(order.getUserId());
+                userCourse.setCourseId(order.getItemId());
+                userCourse.setProgress(0);
+                userCourse.setStatus(0); // 未开始
+                userCourse.setCreateTime(LocalDateTime.now());
+                userCourseMapper.insert(userCourse);
+            }
+        }
+        
         return true;
     }
     
@@ -95,8 +119,15 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
      */
     public Map<String, Object> getUserOrders(Long userId, Integer page, Integer size, Integer payStatus) {
         Page<Order> orderPage = new Page<>(page, size);
-        // 这里需要创建自定义查询方法
-        Page<Order> result = orderMapper.selectPage(orderPage, null);
+        
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Order::getUserId, userId);
+        if (payStatus != null) {
+            wrapper.eq(Order::getPayStatus, payStatus);
+        }
+        wrapper.orderByDesc(Order::getCreateTime);
+        
+        Page<Order> result = orderMapper.selectPage(orderPage, wrapper);
         
         Map<String, Object> map = new HashMap<>();
         map.put("list", result.getRecords());

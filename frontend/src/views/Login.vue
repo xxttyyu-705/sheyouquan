@@ -56,13 +56,15 @@
 </template>
 
 <script setup>
+import { useUserStore } from '@/stores/user';
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock, Camera } from '@element-plus/icons-vue'
-import axios from 'axios'
+import axios from '@/utils/request'
 
 const router = useRouter()
+const userStore = useUserStore();
 const loading = ref(false)
 const loginFormRef = ref()
 
@@ -90,19 +92,19 @@ const handleLogin = async () => {
       loading.value = true
       try {
         const response = await axios.post('/user/login', loginForm)
+        // 直接使用 response.data 作为业务数据
         const { code, message, data } = response.data
         
-        if (code === 200) {
-          localStorage.setItem('token', data.token)
-          localStorage.setItem('user', JSON.stringify(data.userInfo))
-          // 存储用户ID用于后续请求
-          if (data.userInfo && data.userInfo.id) {
-            localStorage.setItem('userId', data.userInfo.id.toString())
-          }
+        if (code === 200 && data && data.token) {
+          // 确认 data 对象存在且包含 token
+          userStore.login({
+            token: data.token,
+            user: data.userInfo
+          });
           ElMessage.success(message || '登录成功')
           router.push('/')
         } else {
-          ElMessage.error(message || '登录失败')
+          ElMessage.error(message || '登录失败，返回数据格式不正确')
         }
       } catch (error) {
         const message = error.response?.data?.message || '登录失败，请稍后重试'

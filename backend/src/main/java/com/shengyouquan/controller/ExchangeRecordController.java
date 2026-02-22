@@ -3,8 +3,11 @@ package com.shengyouquan.controller;
 import com.shengyouquan.common.Result;
 import com.shengyouquan.service.ExchangeRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -25,9 +28,13 @@ public class ExchangeRecordController {
      * 创建兑换记录
      */
     @PostMapping("/create")
-    public Result<String> createExchange(
-            @RequestHeader("X-User-Id") Long userId,
-            @RequestBody ExchangeRequest request) {
+    public Result<String> createExchange(@RequestBody ExchangeRequest request) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = (principal instanceof Long) ? (Long) principal : null;
+        
+        if (userId == null) {
+            return Result.error("用户未登录");
+        }
         
         boolean success = exchangeRecordService.createExchange(
             userId, 
@@ -44,16 +51,27 @@ public class ExchangeRecordController {
     }
     
     /**
-     * 获取用户兑换记录
+     * 获取用户兑换记录（未登录或 Token 无效时返回空列表，避免 401）
      */
     @GetMapping("/list")
     public Result<Map<String, Object>> getUserExchanges(
-            @RequestHeader("X-User-Id") Long userId,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
-        
+        Long userId = getCurrentUserId();
+        if (userId == null) {
+            return Result.success(Map.of("list", Collections.emptyList(), "total", 0L, "pages", 0));
+        }
         Map<String, Object> exchanges = exchangeRecordService.getUserExchanges(userId, page, size);
         return Result.success(exchanges);
+    }
+
+    private Long getCurrentUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return null;
+        }
+        Object principal = auth.getPrincipal();
+        return (principal instanceof Long) ? (Long) principal : null;
     }
     
     /**
