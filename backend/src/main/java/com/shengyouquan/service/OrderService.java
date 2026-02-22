@@ -115,6 +115,38 @@ public class OrderService extends ServiceImpl<OrderMapper, Order> {
     }
     
     /**
+     * 退款订单（管理员操作）
+     */
+    public boolean refundOrder(String orderNo) {
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Order::getOrderNo, orderNo);
+        Order order = orderMapper.selectOne(wrapper);
+        
+        if (order == null) {
+            return false;
+        }
+        
+        // 只有已支付的订单才能退款
+        if (order.getPayStatus() != 1) {
+            return false;
+        }
+        
+        // 更新订单状态为已退款
+        order.setPayStatus(3);
+        orderMapper.updateById(order);
+        
+        // 如果是课程订单，需要移除用户课程记录
+        if (order.getItemType() == 1) { // 1-课程
+            LambdaQueryWrapper<com.shengyouquan.entity.UserCourse> courseWrapper = new LambdaQueryWrapper<>();
+            courseWrapper.eq(com.shengyouquan.entity.UserCourse::getUserId, order.getUserId())
+                        .eq(com.shengyouquan.entity.UserCourse::getCourseId, order.getItemId());
+            userCourseMapper.delete(courseWrapper);
+        }
+        
+        return true;
+    }
+    
+    /**
      * 获取用户订单列表
      */
     public Map<String, Object> getUserOrders(Long userId, Integer page, Integer size, Integer payStatus) {

@@ -23,7 +23,7 @@
             </div>
             
             <el-table :data="users" v-loading="userLoading" style="width: 100%">
-              <el-table-column prop="id" label="ID" width="80" />
+              <el-table-column prop="id" label="ID" width="80" sortable />
               <el-table-column prop="username" label="用户名" width="120" />
               <el-table-column prop="nickname" label="昵称" width="120" />
               <el-table-column prop="email" label="邮箱" min-width="180" />
@@ -77,7 +77,7 @@
             </div>
             
             <el-table :data="works" v-loading="workLoading" style="width: 100%">
-              <el-table-column prop="id" label="ID" width="80" />
+              <el-table-column prop="id" label="ID" width="80" sortable />
               <el-table-column prop="title" label="标题" min-width="150" />
               <el-table-column prop="authorNickname" label="作者" width="120" />
               <el-table-column prop="viewCount" label="浏览" width="80" />
@@ -131,7 +131,7 @@
             </div>
             
             <el-table :data="courses" v-loading="courseLoading" style="width: 100%">
-              <el-table-column prop="id" label="ID" width="80" />
+              <el-table-column prop="id" label="ID" width="80" sortable />
               <el-table-column prop="title" label="标题" min-width="150" />
               <el-table-column prop="teacherName" label="讲师" width="120" />
               <el-table-column prop="price" label="价格" width="100">
@@ -216,7 +216,7 @@
               <el-table-column label="操作" width="120" fixed="right">
                 <template #default="{ row }">
                   <el-button 
-                    v-if="row.payStatus === 0" 
+                    v-if="row.payStatus === 1" 
                     type="text" 
                     size="small" 
                     @click="refundOrder(row)"
@@ -370,7 +370,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import axios from '@/utils/request'
@@ -491,7 +491,7 @@ const loadUsers = async () => {
 const loadWorks = async () => {
   workLoading.value = true
   try {
-    const response = await axios.get('/work/list', {
+    const response = await axios.get('/admin/works', {
       params: {
         page: workPage.value,
         size: workSize.value,
@@ -503,7 +503,7 @@ const loadWorks = async () => {
       workTotal.value = response.data.data.total
     }
   } catch (error) {
-    ElMessage.error('加载作品列表失败')
+    ElMessage.error(error.response?.data?.message || '加载作品列表失败')
   } finally {
     workLoading.value = false
   }
@@ -513,7 +513,7 @@ const loadWorks = async () => {
 const loadCourses = async () => {
   courseLoading.value = true
   try {
-    const response = await axios.get('/course/list', {
+    const response = await axios.get('/admin/courses', {
       params: {
         page: coursePage.value,
         size: courseSize.value,
@@ -525,7 +525,7 @@ const loadCourses = async () => {
       courseTotal.value = response.data.data.total
     }
   } catch (error) {
-    ElMessage.error('加载课程列表失败')
+    ElMessage.error(error.response?.data?.message || '加载课程列表失败')
   } finally {
     courseLoading.value = false
   }
@@ -584,13 +584,15 @@ const loadStats = async () => {
 // 切换用户状态
 const toggleUserStatus = async (user) => {
   try {
-    // 模拟请求
-    await axios.post(`/user/${user.id}/status`)
-    
-    user.status = user.status === 1 ? 0 : 1
-    ElMessage.success('操作成功')
+    const response = await axios.post(`/admin/users/${user.id}/status`)
+    if (response.data.code === 200) {
+      user.status = user.status === 1 ? 0 : 1
+      ElMessage.success(response.data.message || '操作成功')
+      // 重新加载用户列表以获取最新数据
+      await loadUsers()
+    }
   } catch (error) {
-    ElMessage.error('操作失败')
+    ElMessage.error(error.response?.data?.message || '操作失败')
   }
 }
 
@@ -602,11 +604,14 @@ const deleteUser = async (user) => {
     type: 'warning'
   }).then(async () => {
     try {
-      await axios.delete(`/user/${user.id}`)
-      users.value = users.value.filter(u => u.id !== user.id)
-      ElMessage.success('删除成功')
+      const response = await axios.delete(`/admin/users/${user.id}`)
+      if (response.data.code === 200) {
+        ElMessage.success(response.data.message || '删除成功')
+        // 重新加载用户列表
+        await loadUsers()
+      }
     } catch (error) {
-      ElMessage.error('删除失败')
+      ElMessage.error(error.response?.data?.message || '删除失败')
     }
   }).catch(() => {})
 }
@@ -614,11 +619,16 @@ const deleteUser = async (user) => {
 // 切换作品状态
 const toggleWorkStatus = async (work) => {
   try {
-    await axios.post(`/work/${work.id}/status`)
-    work.status = work.status === 1 ? 0 : 1
-    ElMessage.success('操作成功')
+    const newStatus = work.status === 1 ? 0 : 1
+    const response = await axios.post(`/admin/works/${work.id}/review?status=${newStatus}`)
+    if (response.data.code === 200) {
+      work.status = newStatus
+      ElMessage.success(response.data.message || '操作成功')
+      // 重新加载作品列表以获取最新数据
+      await loadWorks()
+    }
   } catch (error) {
-    ElMessage.error('操作失败')
+    ElMessage.error(error.response?.data?.message || '操作失败')
   }
 }
 
@@ -630,11 +640,14 @@ const deleteWork = async (work) => {
     type: 'warning'
   }).then(async () => {
     try {
-      await axios.delete(`/work/${work.id}`)
-      works.value = works.value.filter(w => w.id !== work.id)
-      ElMessage.success('删除成功')
+      const response = await axios.delete(`/admin/works/${work.id}`)
+      if (response.data.code === 200) {
+        ElMessage.success(response.data.message || '删除成功')
+        // 重新加载作品列表
+        await loadWorks()
+      }
     } catch (error) {
-      ElMessage.error('删除失败')
+      ElMessage.error(error.response?.data?.message || '删除失败')
     }
   }).catch(() => {})
 }
@@ -642,11 +655,16 @@ const deleteWork = async (work) => {
 // 切换课程状态
 const toggleCourseStatus = async (course) => {
   try {
-    await axios.post(`/course/${course.id}/status`)
-    course.status = course.status === 1 ? 0 : 1
-    ElMessage.success('操作成功')
+    const newStatus = course.status === 1 ? 0 : 1
+    const response = await axios.post(`/admin/courses/${course.id}/review?status=${newStatus}`)
+    if (response.data.code === 200) {
+      course.status = newStatus
+      ElMessage.success(response.data.message || '操作成功')
+      // 重新加载课程列表以获取最新数据
+      await loadCourses()
+    }
   } catch (error) {
-    ElMessage.error('操作失败')
+    ElMessage.error(error.response?.data?.message || '操作失败')
   }
 }
 
@@ -658,11 +676,14 @@ const deleteCourse = async (course) => {
     type: 'warning'
   }).then(async () => {
     try {
-      await axios.delete(`/course/${course.id}`)
-      courses.value = courses.value.filter(c => c.id !== course.id)
-      ElMessage.success('删除成功')
+      const response = await axios.delete(`/admin/courses/${course.id}`)
+      if (response.data.code === 200) {
+        ElMessage.success(response.data.message || '删除成功')
+        // 重新加载课程列表
+        await loadCourses()
+      }
     } catch (error) {
-      ElMessage.error('删除失败')
+      ElMessage.error(error.response?.data?.message || '删除失败')
     }
   }).catch(() => {})
 }
@@ -675,11 +696,15 @@ const refundOrder = async (order) => {
     type: 'warning'
   }).then(async () => {
     try {
-      await axios.post(`/order/${order.orderNo}/refund`)
-      order.payStatus = 3
-      ElMessage.success('退款成功')
+      const response = await axios.post(`/admin/orders/${order.orderNo}/refund`)
+      if (response.data.code === 200) {
+        order.payStatus = 3
+        ElMessage.success(response.data.message || '退款成功')
+        // 重新加载订单列表
+        await loadOrders()
+      }
     } catch (error) {
-      ElMessage.error('退款失败')
+      ElMessage.error(error.response?.data?.message || '退款失败')
     }
   }).catch(() => {})
 }
@@ -806,10 +831,6 @@ const handleTabChange = (tab) => {
 watch(activeTab, (newVal) => {
   handleTabChange(newVal)
 })
-</script>
-
-<script>
-import { watch } from 'vue'
 </script>
 
 <style scoped>

@@ -13,8 +13,10 @@ const service = axios.create({
 // 请求拦截器：添加 Token
 service.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    let token = localStorage.getItem('token');
     if (token) {
+      // 移除可能存在的引号，确保Token格式正确
+      token = token.replace(/^"|"$/g, '');
       config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;

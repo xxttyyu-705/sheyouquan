@@ -24,7 +24,7 @@ const proxyOptions = {
   }
 }
 
-const proxyPaths = ['/user', '/work', '/course', '/product', '/point', '/exchange', '/post', '/comment', '/file', '/order']
+const proxyPaths = ['/user', '/work', '/course', '/product', '/point', '/exchange', '/post', '/comment', '/file', '/order', '/admin']
 
 export default defineConfig({
   base: './',

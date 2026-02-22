@@ -75,6 +75,26 @@ public interface WorkMapper extends BaseMapper<Work> {
     WorkDTO selectWorkDetail(@Param("id") Long id);
     
     /**
+     * 管理员分页查询作品列表（包含作者信息）
+     */
+    @Select("<script>" +
+            "SELECT w.*, u.nickname as authorNickname, u.avatar as authorAvatar " +
+            "FROM work w " +
+            "LEFT JOIN sys_user u ON w.user_id = u.id " +
+            "WHERE w.deleted = 0 " +
+            "<if test='status != null and status != \"\"'>" +
+            "AND w.status = #{status} " +
+            "</if>" +
+            "<if test='keyword != null and keyword != \"\"'>" +
+            "AND (w.title LIKE CONCAT('%', #{keyword}, '%') OR w.description LIKE CONCAT('%', #{keyword}, '%')) " +
+            "</if>" +
+            "ORDER BY w.create_time DESC" +
+            "</script>")
+    Page<WorkDTO> selectAdminWorkPage(Page<WorkDTO> page,
+                                     @Param("status") String status,
+                                     @Param("keyword") String keyword);
+    
+    /**
      * 更新作品统计
      */
     @Update("<script>" +

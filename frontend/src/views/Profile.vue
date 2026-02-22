@@ -104,7 +104,10 @@
                 v-model:current-page="pointsPage"
                 v-model:page-size="pointsSize"
                 :total="pointsTotal"
+                :page-sizes="[10, 20, 50]"
+                layout="total, sizes, prev, pager, next"
                 @current-change="loadPointsRecords"
+                @size-change="loadPointsRecords"
               />
             </div>
           </div>
@@ -304,19 +307,34 @@ const beforeAvatarUpload = (file) => {
   return true
 }
 
-// 加载积分记录
+// 加载积分记录（与商城一致，来自 /point/history）
 const loadPointsRecords = async () => {
   pointsLoading.value = true
   try {
-    // 模拟数据
-    pointsRecords.value = [
-      { description: '注册用户', points: 10, balance: 10, createTime: '2024-01-01 10:00:00' },
-      { description: '发布作品', points: 5, balance: 15, createTime: '2024-01-02 14:30:00' },
-      { description: '每日签到', points: 5, balance: 20, createTime: '2024-01-03 09:00:00' }
-    ]
-    pointsTotal.value = 3
+    const res = await axios.get('/point/history', {
+      params: { page: pointsPage.value, size: pointsSize.value }
+    })
+    const { code, data } = res.data
+    if (code === 200) {
+      const list = (data?.list || []).map((row) => ({
+        description: row.reason || '-',
+        points: row.type === 1 ? row.points : -(row.points || 0),
+        balance: '-',
+        createTime: row.createTime || '-'
+      }))
+      pointsRecords.value = list
+      pointsTotal.value = data?.total ?? 0
+      await loadUserInfo()
+    } else {
+      pointsRecords.value = []
+      pointsTotal.value = 0
+    }
   } catch (error) {
-    ElMessage.error('加载积分记录失败')
+    if (error?.response?.status !== 401) {
+      ElMessage.error('加载积分记录失败')
+    }
+    pointsRecords.value = []
+    pointsTotal.value = 0
   } finally {
     pointsLoading.value = false
   }

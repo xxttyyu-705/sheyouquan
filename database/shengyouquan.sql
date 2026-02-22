@@ -261,6 +261,29 @@ INSERT INTO `course_chapter` VALUES (20, 2, '基础调色技巧', '掌握基本�
 INSERT INTO `course_chapter` VALUES (21, 2, '人像精修方法', '专业人像照片精修技巧', 'https://example.com/video7.mp4', 25, 3, 0, 1, '2026-02-07 13:32:47');
 
 -- ----------------------------
+-- Table structure for course_comment
+-- ----------------------------
+DROP TABLE IF EXISTS `course_comment`;
+CREATE TABLE `course_comment`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '评论ID',
+  `course_id` bigint(20) NOT NULL COMMENT '课程ID',
+  `user_id` bigint(20) NOT NULL COMMENT '用户ID',
+  `content` text CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '评论内容',
+  `parent_id` bigint(20) NULL DEFAULT NULL COMMENT '父评论ID，用于回复',
+  `status` tinyint(4) NULL DEFAULT 1 COMMENT '状态: 0-待审核, 1-已发布, 2-已删除',
+  `create_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
+  `update_time` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0) COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_course_id`(`course_id`) USING BTREE,
+  INDEX `idx_user_id`(`user_id`) USING BTREE,
+  INDEX `idx_course_status`(`course_id`, `status`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '课程评论表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of course_comment
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for data_statistics
 -- ----------------------------
 DROP TABLE IF EXISTS `data_statistics`;
@@ -1130,6 +1153,11 @@ ALTER TABLE `course` ADD CONSTRAINT `fk_course_teacher` FOREIGN KEY (`teacher_id
 
 -- course_chapter
 ALTER TABLE `course_chapter` ADD CONSTRAINT `fk_course_chapter_course` FOREIGN KEY (`course_id`) REFERENCES `course` (`id`) ON DELETE CASCADE;
+
+-- course_comment
+ALTER TABLE `course_comment` ADD CONSTRAINT `fk_course_comment_course` FOREIGN KEY (`course_id`) REFERENCES `course` (`id`) ON DELETE CASCADE;
+ALTER TABLE `course_comment` ADD CONSTRAINT `fk_course_comment_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`) ON DELETE CASCADE;
+ALTER TABLE `course_comment` ADD CONSTRAINT `fk_course_comment_parent` FOREIGN KEY (`parent_id`) REFERENCES `course_comment` (`id`) ON DELETE CASCADE;
 
 -- exchange_record
 ALTER TABLE `exchange_record` ADD CONSTRAINT `fk_exchange_user` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`);
